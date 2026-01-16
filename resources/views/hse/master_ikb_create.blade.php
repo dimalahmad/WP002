@@ -3,10 +3,7 @@
 @section('title', 'Tambah Detail Jenis Pekerjaan Berbahaya Baru')
 
 @push('styles')
-    <!-- Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
     <style>
         .form-check-input:checked {
             background-color: #0d6efd;
@@ -45,21 +42,12 @@
                         <div class="mb-4">
                             <label for="namaPekerjaan" class="form-label fw-bold">Nama Pekerjaan <span
                                     class="text-danger">*</span></label>
-                            <select class="form-select select2" id="namaPekerjaan" name="nama_pekerjaan"
-                                style="width: 100%;">
-                                <option value="" selected disabled>Dropdown Search</option>
-                                <option value="Kerja Panas">Kerja Panas</option>
-                                <option value="Memasuki Ruang Terbatas">Memasuki Ruang Terbatas</option>
-                                <option value="Pekerjaan Penggalian">Pekerjaan Penggalian</option>
-                                <option value="Bekerja di Ketinggian">Bekerja di Ketinggian</option>
-                                <option value="Pekerjaan Listrik">Pekerjaan Listrik</option>
-                                <option value="Pekerjaan Dingin">Pekerjaan Dingin</option>
-                                <option value="Radiografi">Radiografi</option>
-                            </select>
+                            <input type="text" class="form-control" id="namaPekerjaan" name="nama_pekerjaan"
+                                placeholder="Masukkan Nama Pekerjaan" required>
                         </div>
 
                         <div class="row">
-                            <!-- Kolom Kiri: APD -->
+                            <!-- Kolom Kiri: Alat Pelindung Diri (APD) -->
                             <div class="col-md-6 mb-4">
                                 <div class="card shadow-none border">
                                     <div class="card-header bg-light">
@@ -67,6 +55,7 @@
                                     </div>
                                     <div class="card-body">
                                         @php
+                                            // Daftar APD
                                             $apds = [
                                                 'Helmet',
                                                 'Safety Shoes',
@@ -104,6 +93,7 @@
                                     </div>
                                     <div class="card-body">
                                         @php
+                                            // Daftar Pengaman
                                             $pengamans = [
                                                 'Isolasi Power Supply',
                                                 'Hydr. System Off',
@@ -145,56 +135,58 @@
 @endsection
 
 @push('scripts')
-    <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function () {
-            // Initialize Select2
-            $('.select2').select2({
-                theme: 'bootstrap-5',
-                placeholder: 'Dropdown Search',
-                tags: true // Allow typing new values
-            });
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verifikasi Simpan Data
+            const btnSimpan = document.getElementById('btnSimpan');
+            const inputNamaPekerjaan = document.getElementById('namaPekerjaan');
 
-            // Save Verification
-            $('#btnSimpan').click(function () {
-                const namaPekerjaan = $('#namaPekerjaan').val();
+            if (btnSimpan) {
+                btnSimpan.addEventListener('click', function () {
+                    const namaPekerjaan = inputNamaPekerjaan.value.trim();
 
-                if (!namaPekerjaan) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Silakan pilih atau isi nama pekerjaan!',
-                    });
-                    return;
-                }
-
-                Swal.fire({
-                    title: 'Simpan Data?',
-                    text: "Pastikan data yang dimasukkan sudah benar.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0d6efd',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Simpan',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                    // Validasi: Cek jika nama pekerjaan kosong
+                    if (!namaPekerjaan) {
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Data Jenis Pekerjaan Berbahaya berhasil disimpan.',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = "{{ route('hse.master-ikb') }}";
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Jenis Pekerjaan tidak bisa ditambahkan karena Data Kosong.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#d33',
                         });
+                        return;
                     }
+
+                    // Tampilkan Konfirmasi Simpan
+                    Swal.fire({
+                        title: 'Apakah anda yakin?',
+                        text: "Untuk menyimpan data ini?",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Simpan',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Simulasi Berhasil Simpan
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: 'Data Jenis Pekerjaan Berbahaya berhasil disimpan.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = "{{ route('hse.master-ikb') }}";
+                            });
+                        }
+                    });
                 });
-            });
+            }
         });
     </script>
 @endpush

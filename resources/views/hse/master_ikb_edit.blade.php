@@ -3,12 +3,10 @@
 @section('title', 'Edit Detail Jenis Pekerjaan Berbahaya')
 
 @push('styles')
-    <!-- Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
     <style>
         .form-check-input:checked {
-            background-color: #ffc107; /* Warning color for Edit */
+            background-color: #ffc107; /* Warna Peringatan untuk Edit */
             border-color: #ffc107;
         }
     </style>
@@ -43,13 +41,8 @@
                         <!-- Nama Pekerjaan -->
                         <div class="mb-4">
                             <label for="namaPekerjaan" class="form-label fw-bold">Nama Pekerjaan <span class="text-danger">*</span></label>
-                            <select class="form-select select2" id="namaPekerjaan" name="nama_pekerjaan" style="width: 100%;">
-                                <option value="Kerja Panas" selected>Kerja Panas</option> <!-- Pre-selected for demo -->
-                                <option value="Memasuki Ruang Terbatas">Memasuki Ruang Terbatas</option>
-                                <option value="Pekerjaan Penggalian">Pekerjaan Penggalian</option>
-                                <option value="Bekerja di Ketinggian">Bekerja di Ketinggian</option>
-                                <option value="Pekerjaan Listrik">Pekerjaan Listrik</option>
-                            </select>
+                            <input type="text" class="form-control" id="namaPekerjaan" name="nama_pekerjaan"
+                                value="Kerja Panas" required>
                         </div>
 
                         <div class="row">
@@ -61,12 +54,13 @@
                                     </div>
                                     <div class="card-body">
                                         @php
+                                            // Daftar APD
                                             $apds = [
                                                 'Helmet', 'Safety Shoes', 'Sarung Tangan', 'Kaca Mata Safety', 'Masker',
                                                 'Pelindung Wajah', 'Body Harnest', 'Kedok Las', 'Air Line Respirator',
                                                 'Breathing Apparatus', 'Baju Tahan Panas'
                                             ];
-                                            // Dummy selected values
+                                            // Data Dummy Terpilih
                                             $selectedApds = ['Helmet', 'Safety Shoes', 'Sarung Tangan', 'Kedok Las', 'Baju Tahan Panas'];
                                         @endphp
                                         <div class="d-flex flex-column gap-2">
@@ -92,12 +86,13 @@
                                     </div>
                                     <div class="card-body">
                                         @php
+                                            // Daftar Pengaman
                                             $pengamans = [
                                                 'Isolasi Power Supply', 'Hydr. System Off', 'Bekas Gas Beracun', 'Tag Out',
                                                 'Log Out', 'APAR', 'Hydrant', 'Safety Line',
                                                 'Lampu Penerangan DC 50 Volt'
                                             ];
-                                            // Dummy selected values
+                                            // Data Dummy Terpilih
                                             $selectedPengamans = ['Tag Out', 'Log Out', 'APAR'];
                                         @endphp
                                         <div class="d-flex flex-column gap-2">
@@ -129,56 +124,58 @@
 @endsection
 
 @push('scripts')
-    <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        $(document).ready(function() {
-            // Initialize Select2
-            $('.select2').select2({
-                theme: 'bootstrap-5',
-                placeholder: 'Dropdown Search',
-                tags: true
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verifikasi Simpan Data
+            const btnSimpan = document.getElementById('btnSimpan');
+            const inputNamaPekerjaan = document.getElementById('namaPekerjaan');
 
-            // Save Verification
-            $('#btnSimpan').click(function() {
-                const namaPekerjaan = $('#namaPekerjaan').val();
+            if (btnSimpan) {
+                btnSimpan.addEventListener('click', function() {
+                    const namaPekerjaan = inputNamaPekerjaan.value;
 
-                if (!namaPekerjaan) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Silakan pilih atau isi nama pekerjaan!',
-                    });
-                    return;
-                }
-
-                Swal.fire({
-                    title: 'Simpan Perubahan?',
-                    text: "Data akan diperbarui.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ffc107',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, Simpan',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                    // Validasi: Cek jika nama pekerjaan kosong
+                    if (!namaPekerjaan) {
                         Swal.fire({
-                            title: 'Berhasil!',
-                            text: 'Perubahan berhasil disimpan.',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = "{{ route('hse.master-ikb') }}";
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Perubahan tidak bisa disimpan karena Nama Pekerjaan Kosong.',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#d33',
                         });
+                        return;
                     }
+
+                    // Tampilkan Konfirmasi Simpan
+                    Swal.fire({
+                        title: 'Apakah anda yakin?',
+                        text: "Untuk menyimpan perubahan ini?",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ffc107',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Perbarui',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Simulasi Berhasil Simpan
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: 'Perubahan berhasil disimpan.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = "{{ route('hse.master-ikb') }}";
+                            });
+                        }
+                    });
                 });
-            });
+            }
         });
     </script>
 @endpush
