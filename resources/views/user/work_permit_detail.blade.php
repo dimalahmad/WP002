@@ -65,7 +65,13 @@
         };
 
         // Dummy Data
+        // Dummy Data - VENDOR BLACKLIST SIMULATION
+        // Simulate Vendor being "Suspect" or having blacklist history for demo
         $vendor = 'PT. Teknologi Maju';
+        $isVendorBlacklisted = true; // Toggle to true to test DEMO BLACKLIST VISUALIZATION
+        $vendorLabelHtml = $isVendorBlacklisted
+            ? $vendor . ' <span class="badge bg-danger ms-2"><i class="bi bi-exclamation-triangle-fill"></i> BLACKLISTED</span>'
+            : $vendor . ' <span class="badge bg-success ms-2" style="font-size: 0.6em;"><i class="bi bi-check-circle"></i> TERVERIFIKASI</span>';
         $area = 'Area Kantor Pusat';
         $sta = 'Jasa Rutin';
         $no_jo = 'JO-2023-001';
@@ -77,9 +83,10 @@
 
         // Dummy Employees
         $employees = [
-            ['name' => 'Andi Saputra', 'nik' => '1234567890123456', 'gender' => 'Laki-laki', 'blood' => 'O'],
-            ['name' => 'Budi Santoso', 'nik' => '9876543210987654', 'gender' => 'Laki-laki', 'blood' => 'A'],
-            ['name' => 'Citra Dewi', 'nik' => '4567891230123456', 'gender' => 'Perempuan', 'blood' => 'B'],
+            ['name' => 'Andi Saputra', 'nik' => '1234567890123456', 'gender' => 'Laki-laki', 'blood' => 'O', 'is_blacklisted' => false],
+            ['name' => 'Budi Santoso', 'nik' => '9876543210987654', 'gender' => 'Laki-laki', 'blood' => 'A', 'is_blacklisted' => false],
+            ['name' => 'Citra Dewi', 'nik' => '4567891230123456', 'gender' => 'Perempuan', 'blood' => 'B', 'is_blacklisted' => false],
+            ['name' => 'Dudung (Blacklist)', 'nik' => '9999999999999999', 'gender' => 'Laki-laki', 'blood' => 'AB', 'is_blacklisted' => true],
         ];
     @endphp
 
@@ -222,8 +229,16 @@
                                 <!-- Nama Vendor -->
                                 <div class="mb-3">
                                     <label class="form-label">Nama Vendor/Instansi/Universitas</label>
-                                    <input type="text" class="form-control" name="nama_vendor" value="{{ $vendor }}"
-                                        disabled>
+                                    <div class="input-group">
+                                        <div
+                                            class="form-control bg-light d-flex align-items-center justify-content-between">
+                                            <span>{!! $vendorLabelHtml !!}</span>
+                                            @if($isVendorBlacklisted)
+                                                <i class="bi bi-exclamation-octagon-fill text-danger fs-5"
+                                                    data-bs-toggle="tooltip" title="Vendor ini dalam status Blacklist!"></i>
+                                            @endif
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- Area & STA -->
@@ -319,24 +334,33 @@
                                 <!-- Employee List Loop -->
                                 <div style="max-height: 500px; overflow-y: auto;">
                                     @foreach($employees as $emp)
-                                        <div class="employee-card d-flex align-items-center">
+                                        <div
+                                            class="employee-card d-flex align-items-center {{ $emp['is_blacklisted'] ? 'border-danger bg-danger bg-opacity-10' : '' }}">
                                             <div class="me-3">
-                                                <div class="avatar-circle">
-                                                    <i class="bi bi-person"></i>
+                                                <div class="avatar-circle {{ $emp['is_blacklisted'] ? 'bg-danger' : '' }}">
+                                                    <i
+                                                        class="bi {{ $emp['is_blacklisted'] ? 'bi-slash-circle' : 'bi-person' }}"></i>
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <h6 class="mb-0 fw-bold">{{ $emp['name'] }}</h6>
+                                                <h6
+                                                    class="mb-0 fw-bold {{ $emp['is_blacklisted'] ? 'text-decoration-line-through text-danger' : '' }}">
+                                                    {{ $emp['name'] }}
+                                                </h6>
                                                 <small class="text-muted d-block">{{ $emp['nik'] }}</small>
                                                 <div class="mt-1">
-                                                    <span class="badge border text-dark">{{ $emp['gender'] }}</span>
-                                                    <span class="badge border text-dark">Gol. Darah {{ $emp['blood'] }}</span>
+                                                    @if($emp['is_blacklisted'])
+                                                        <span class="badge bg-danger">BLACKLISTED</span>
+                                                    @else
+                                                        <span class="badge border text-dark">{{ $emp['gender'] }}</span>
+                                                        <span class="badge border text-dark">Gol. Darah {{ $emp['blood'] }}</span>
+                                                    @endif
                                                 </div>
                                             </div>
 
                                             <!-- Action Buttons Logic -->
                                             <div class="ms-auto ps-2">
-                                                @if($status == 'Active')
+                                                @if($status == 'Active' && !$emp['is_blacklisted'])
                                                     <!-- Show ID Card Button -->
                                                     <button type="button" class="btn btn-sm btn-outline-dark"
                                                         onclick="showIdCard('{{ $emp['name'] }}', '{{ $emp['nik'] }}', '{{ $emp['gender'] }}')">

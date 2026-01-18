@@ -3,7 +3,7 @@
 @section('title', 'Riwayat OS')
 
 @push('styles')
-    <!-- DataTables CSS for History Table -->
+    <!-- CSS DataTables untuk Tabel Riwayat -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
     <style>
@@ -39,9 +39,9 @@
 
     <div class="app-content">
         <div class="container-fluid">
-            <!-- Data OS Section -->
+            <!-- Bagian Data OS -->
             <div class="row mb-4">
-                <!-- Left Column: Uploads -->
+                <!-- Kolom Kiri: Uploads -->
                 <div class="col-md-4">
                     <!-- Foto Wajah -->
                     <div class="card card-success card-outline mb-3">
@@ -80,7 +80,7 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Personal Data -->
+                <!-- Kolom Kanan: Data Pribadi -->
                 <div class="col-md-8">
                     <div class="card card-success card-outline">
                         <div class="card-header">
@@ -178,7 +178,71 @@
                 </div>
             </div>
 
-            <!-- History / Log Section -->
+            <!-- Bagian Riwayat Penugasan (DEMO) -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card card-outline card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Riwayat Penugasan Work Permit</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>No. WP</th>
+                                            <th>Vendor</th>
+                                            <th>Posisi / Peran</th>
+                                            <th>Area Kerja</th>
+                                            <th>Periode</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dummy History 1: Office (Saat Ini) -->
+                                        <tr>
+                                            <td><a href="#" class="fw-bold text-decoration-none">WP-2024-001</a></td>
+                                            <td>PT. Teknologi Maju</td>
+                                            <td>Teknisi Jaringan</td>
+                                            <td>Office (Gedung Utama)</td>
+                                            <td>14 Jan 2024 - 14 Jan 2025</td>
+                                            <td><span class="badge bg-success">Aktif</span></td>
+                                        </tr>
+                                        <!-- Dummy History 2: Manufacturing -->
+                                        <tr>
+                                            <td><a href="#" class="fw-bold text-decoration-none text-muted">WP-2023-089</a>
+                                            </td>
+                                            <td>PT. Rekayasa Industri</td>
+                                            <td>Operator Produksi</td>
+                                            <td>Manufacturing (Pabrik Baja)</td>
+                                            <td>01 Jan 2023 - 31 Des 2023</td>
+                                            <td><span class="badge bg-secondary">Selesai</span></td>
+                                        </tr>
+                                        <!-- Dummy History 3: QC -->
+                                        <tr>
+                                            <td><a href="#" class="fw-bold text-decoration-none text-muted">WP-2022-015</a>
+                                            </td>
+                                            <td>PT. Quality Control Prima</td>
+                                            <td>Staff QC</td>
+                                            <td>Quality Control Lab</td>
+                                            <td>01 Jan 2022 - 31 Des 2022</td>
+                                            <td><span class="badge bg-secondary">Selesai</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <small class="text-muted"><i class="bi bi-info-circle me-1"></i> Data digenerate otomatis
+                                berdasarkan riwayat WP.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Bagian Riwayat / Log -->
             <div class="row">
                 <div class="col-md-12">
                     <div class="card card-outline card-secondary">
@@ -197,10 +261,22 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td>10/02/2024 08:15</td>
+                                        <td>System</td>
+                                        <td><span class="badge bg-danger">Blacklist</span></td>
+                                        <td>Karyawan ditandai sebagai Blacklist karena Pelanggaran Berat K3.</td>
+                                    </tr>
+                                    <tr>
                                         <td>15/01/2026 09:30</td>
                                         <td>Admin</td>
                                         <td><span class="badge bg-warning">Update</span></td>
                                         <td>Perubahan No. Handphone dari '0812-0000-0000' menjadi '0812-3456-7890'.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>12/01/2026 13:00</td>
+                                        <td>System</td>
+                                        <td><span class="badge bg-info">Auto</span></td>
+                                        <td>Status Work Permit WP-2024-001 menjadi Active.</td>
                                     </tr>
                                     <tr>
                                         <td>10/01/2026 14:20</td>

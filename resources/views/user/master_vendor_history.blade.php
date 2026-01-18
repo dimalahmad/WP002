@@ -3,7 +3,7 @@
 @section('title', 'Riwayat Vendor')
 
 @push('styles')
-    <!-- DataTables CSS for History Table -->
+    <!-- CSS DataTables untuk Tabel Riwayat -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 @endpush
@@ -26,7 +26,7 @@
 
     <div class="app-content">
         <div class="container-fluid">
-            <!-- Data Vendor Section -->
+            <!-- Bagian Data Vendor -->
             <div class="row mb-4">
                 <div class="col-md-12">
                     <div class="card card-success card-outline">
@@ -63,7 +63,71 @@
                 </div>
             </div>
 
-            <!-- History / Log Section -->
+            <!-- Bagian Riwayat Kontrak (DEMO) -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card card-outline card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Riwayat Kontrak (Work Permit)</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>No. WP</th>
+                                            <th>Pekerjaan</th>
+                                            <th>Lokasi</th>
+                                            <th>Jumlah Pekerja</th>
+                                            <th>Periode</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dummy WP 1 -->
+                                        <tr>
+                                            <td><a href="#" class="fw-bold text-decoration-none">WP-2024-001</a></td>
+                                            <td>Maintenance Server Utama</td>
+                                            <td>Data Center (Pusat)</td>
+                                            <td><span class="badge bg-info text-dark">5 Orang</span></td>
+                                            <td>14 Jan 2024 - 14 Jan 2025</td>
+                                            <td><span class="badge bg-success">Aktif</span></td>
+                                        </tr>
+                                        <!-- Dummy WP 2 -->
+                                        <tr>
+                                            <td><a href="#" class="fw-bold text-decoration-none text-muted">WP-2023-044</a>
+                                            </td>
+                                            <td>Instalasi CCTV Baru</td>
+                                            <td>Area Pabrik B</td>
+                                            <td><span class="badge bg-info text-dark">3 Orang</span></td>
+                                            <td>10 Agu 2023 - 20 Agu 2023</td>
+                                            <td><span class="badge bg-secondary">Selesai</span></td>
+                                        </tr>
+                                        <!-- Dummy WP 3 -->
+                                        <tr>
+                                            <td><a href="#" class="fw-bold text-decoration-none text-muted">WP-2022-101</a>
+                                            </td>
+                                            <td>Upgrade Jaringan Fiber Optic</td>
+                                            <td>Kawasan Industri</td>
+                                            <td><span class="badge bg-info text-dark">8 Orang</span></td>
+                                            <td>01 Mar 2022 - 30 Apr 2022</td>
+                                            <td><span class="badge bg-secondary">Selesai</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <small class="text-muted"><i class="bi bi-info-circle me-1"></i> Menampilkan 3 dari 12 total
+                                kontrak.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Bagian Riwayat / Log -->
             <div class="row">
                 <div class="col-md-12">
                     <div class="card card-outline card-secondary">
@@ -81,6 +145,12 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr>
+                                        <td>10/02/2026 08:30</td>
+                                        <td>Admin</td>
+                                        <td><span class="badge bg-warning">Update</span></td>
+                                        <td>Status Vendor berubah dari 'Hold' menjadi 'Active'.</td>
+                                    </tr>
                                     <tr>
                                         <td>15/01/2026 09:30</td>
                                         <td>Admin</td>
