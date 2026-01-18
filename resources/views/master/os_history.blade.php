@@ -29,6 +29,9 @@
                     <h3 class="mb-0 fw-bold">Riwayat Data OS</h3>
                 </div>
                 <div class="col-sm-6 text-end">
+                    <a href="{{ route('user.master-os.edit') }}" class="btn btn-warning text-white me-2">
+                        <i class="bi bi-pencil-square"></i> Edit Data
+                    </a>
                     <a href="{{ route('user.master-os') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>

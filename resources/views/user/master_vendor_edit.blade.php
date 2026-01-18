@@ -77,6 +77,9 @@
                                         </div>
                                     </div>
                                     <div class="card-footer text-end">
+                                        <a href="{{ route('user.master-vendor.history') }}" class="btn btn-secondary me-2">
+                                            <i class="bi bi-x-circle"></i> Batal
+                                        </a>
                                         <button type="button" class="btn btn-danger me-2" id="btnBlacklist">
                                             <i class="bi bi-slash-circle"></i> Blacklist
                                         </button>
@@ -254,9 +257,9 @@
                         text: 'Apakah anda yakin ingin memasukkan vendor ini ke daftar blacklist?',
                         icon: 'warning',
                         html: `
-                                                    <p class="text-muted mb-2 text-start">Silakan masukkan alasan blacklist:</p>
-                                                    <textarea id="swal-input-reason" class="form-control" rows="3" placeholder="Contoh: Kinerja buruk, pelanggaran kontrak, dokumen palsu, dll..."></textarea>
-                                                `,
+                                                            <p class="text-muted mb-2 text-start">Silakan masukkan alasan blacklist:</p>
+                                                            <textarea id="swal-input-reason" class="form-control" rows="3" placeholder="Contoh: Kinerja buruk, pelanggaran kontrak, dokumen palsu, dll..."></textarea>
+                                                        `,
                         showCancelButton: true,
                         confirmButtonText: 'Ya, Blacklist',
                         cancelButtonText: 'Batal',
@@ -273,7 +276,7 @@
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Success Notification
+                            // Notifikasi Sukses
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
@@ -281,7 +284,7 @@
                                 showConfirmButton: false,
                                 timer: 1500
                             }).then(() => {
-                                // Optional: Redirect or update UI
+                                // Opsional: Redirect atau perbarui antarmuka
                                 window.location.href = "{{ route('user.master-vendor') }}";
                             });
                         }
@@ -312,7 +315,7 @@
                         text: "Untuk memperbarui data vendor ini?",
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonColor: '#ffc107', // Warning color
+                        confirmButtonColor: '#ffc107', // Warna peringatan
                         cancelButtonColor: '#d33',
                         confirmButtonText: 'Perbarui',
                         cancelButtonText: 'Batal'

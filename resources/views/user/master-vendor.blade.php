@@ -3,7 +3,7 @@
 @section('title', 'Master Vendor')
 
 @push('styles')
-    <!-- DataTables CSS -->
+    <!-- CSS DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
     <style>
@@ -123,13 +123,10 @@
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <!-- Action Buttons Group -->
+                                        <!-- Grup Tombol Aksi -->
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('user.master-vendor.edit') }}" class="btn btn-warning text-white"
-                                                title="Edit"><i class="bi bi-pencil-fill"></i></a>
-                                            <a href="{{ route('user.master-vendor.history') }}"
-                                                class="btn btn-success text-white" title="History"><i
-                                                    class="bi bi-clock-history"></i></a>
+                                            <a href="{{ route('user.master-vendor.history') }}" class="btn btn-primary"
+                                                title="Detail"><i class="bi bi-eye"></i></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -143,9 +140,9 @@
 @endsection
 
 @push('scripts')
-    <!-- jQuery (Required for DataTables) -->
+    <!-- jQuery (Wajib untuk DataTables) -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- DataTables & Plugins -->
+    <!-- DataTables & Plugin -->
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>

@@ -47,7 +47,7 @@
                 <div class="col-12 mb-4">
                     <form id="formEditOS" action="#" method="POST" enctype="multipart/form-data">
                         <div class="row">
-                            <!-- Left Column: Uploads -->
+                            <!-- Kolom Kiri: Upload Data -->
                             <div class="col-md-4">
                                 <!-- Foto Wajah -->
                                 <div class="card card-warning card-outline mb-3">
@@ -86,7 +86,7 @@
                                 </div>
                             </div>
 
-                            <!-- Right Column: Personal Data -->
+                            <!-- Kolom Kanan: Data Pribadi -->
                             <div class="col-md-8">
                                 <div class="card card-warning card-outline">
                                     <div class="card-header">
@@ -196,6 +196,9 @@
                                         </div>
                                     </div>
                                     <div class="card-footer text-end">
+                                        <a href="{{ route('user.master-os.history') }}" class="btn btn-secondary me-2">
+                                            <i class="bi bi-x-circle"></i> Batal
+                                        </a>
                                         <button type="button" class="btn btn-danger me-2" id="btnBlacklist">
                                             <i class="bi bi-slash-circle"></i> Blacklist
                                         </button>
@@ -397,9 +400,9 @@
                         text: 'Apakah anda yakin ingin memasukkan karyawan ini ke daftar blacklist?',
                         icon: 'warning',
                         html: `
-                                                <p class="text-muted mb-2 text-start">Silakan masukkan alasan blacklist:</p>
-                                                <textarea id="swal-input-reason" class="form-control" rows="3" placeholder="Contoh: Pelanggaran berat K3, dokumen palsu, dll..."></textarea>
-                                            `,
+                                                        <p class="text-muted mb-2 text-start">Silakan masukkan alasan blacklist:</p>
+                                                        <textarea id="swal-input-reason" class="form-control" rows="3" placeholder="Contoh: Pelanggaran berat K3, dokumen palsu, dll..."></textarea>
+                                                    `,
                         showCancelButton: true,
                         confirmButtonText: 'Ya, Blacklist',
                         cancelButtonText: 'Batal',
@@ -416,19 +419,19 @@
                         }
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Success Notification
+                            // Notifikasi Sukses
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
-                                text: 'Karyawan berhasil ditambahkan ke blacklist.', // Using slightly clearer wording while keeping "berhasil ditambahkan" intent
+                                text: 'Karyawan berhasil ditambahkan ke blacklist.', // Menggunakan kata-kata yang jelas
                                 showConfirmButton: false,
                                 timer: 1500
                             }).then(() => {
-                                // Optional: Redirect or update UI
+                                // Opsional: Redirect atau perbarui UI
                                 window.location.href = "{{ route('user.master-os') }}";
                             });
                         } else if (result.dismiss === Swal.DismissReason.cancel) {
-                            // No action needed specifically for cancel, standard behavior
+                            // Tidak ada tindakan khusus untuk batal, perilaku standar
                         }
                     });
                 });
@@ -470,7 +473,7 @@
                                 showConfirmButton: false,
                                 timer: 1500
                             }).then(() => {
-                                // Optional logic
+                                // Logika Opsional
                             });
                         }
                     });
