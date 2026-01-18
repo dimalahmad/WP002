@@ -7,15 +7,25 @@ Aplikasi ini dibangun menggunakan **Laravel** dengan template **AdminLTE**, berf
 
 ---
 
+## 🆕 Update Terbaru (Januari 2026)
+*   **UI/UX Refactoring**: Perubahan tampilan pada Master Vendor dan Master OS. Tab navigasi dihapus digantikan dengan tampilan *Single Page Scroll* yang lebih informatif.
+*   **Pemisahan Alur Edit**: Tombol "Edit" dipindahkan ke dalam halaman Detail/History untuk menjaga kebersihan tabel utama.
+*   **Fitur Cetak**: Penambahan opsi cetak dokumen Work Permit dan HSE Induction pada halaman detail.
+
+---
+
 ## 🚀 Fitur Utama
 
 Sistem ini dibagi menjadi 3 peran utama (Role):
 
 ### 1. 👷 User (Pemohon)
 *   **Dashboard**: Melihat ringkasan Work Permit.
-*   **Master Data**: Manajemen data Outsourcing (OS) dan Vendor.
+*   **Master Data**: Manajemen data Outsourcing (OS) dan Vendor (Edit, History, & Blacklist).
 *   **Pengajuan Work Permit**: Membuat pengajuan izin kerja baru dengan fitur simulasi input pegawai otomatis.
-*   **Print ID Card**: Mencetak ID Card sementara untuk pegawai yang izinnya telah disetujui.
+*   **Cetak Dokumen**: Fitur pencetakan lengkap meliputi:
+    *   **Work Permit**: Dokumen izin kerja untuk pegangan User/Vendor.
+    *   **Bukti Safety Induction**: Sertifikat kelayakan K3 (Muncul setelah status valid).
+    *   **ID Card**: Kartu identitas sementara pegawai dengan QR Code.
 *   **History**: Melihat riwayat pengajuan izin kerja.
 
 ### 2. 🏢 Corsec (Corporate Secretary)
@@ -45,6 +55,7 @@ Sistem ini dibagi menjadi 3 peran utama (Role):
     *   **Select2** (Pilihan dropdown yang lebih baik)
     *   **SweetAlert2** (Notifikasi popup yang modern)
     *   **Chart.js / Signature Pad** (Fitur tanda tangan digital)
+    *   **Google Charts API** (Generator QR Code untuk ID Card)
 
 ---
 
