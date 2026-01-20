@@ -38,8 +38,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('user.work-permit') }}"
-                                class="nav-link {{ request()->routeIs('user.work-permit') ? 'active' : '' }}">
+                            <a href="{{ route('user.work-permit.index') }}"
+                                class="nav-link {{ request()->routeIs('user.work-permit*') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Work Permit</p>
                             </a>
@@ -96,6 +96,13 @@
                                 class="nav-link {{ request()->routeIs('hse.master-ikb') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Master IKB</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('hse.master-blacklist') }}"
+                                class="nav-link {{ request()->routeIs('hse.master-blacklist') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Master Blacklist</p>
                             </a>
                         </li>
                         <li class="nav-item">

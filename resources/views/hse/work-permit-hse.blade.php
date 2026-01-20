@@ -61,72 +61,46 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                // Simulasi Data Dummy
-                                $wps = [
-                                    [
-                                        'id' => 101,
-                                        'doc_no' => 'WP-2024-001',
-                                        'applicant' => 'Budi Santoso',
-                                        'company' => 'PT. Maju Jaya',
-                                        // WP ini memiliki BEBERAPA jenis induksi
-                                        'safety_types' => ['Kerja Panas', 'Bekerja di Ketinggian'],
-                                        'date' => '2024-01-14',
-                                        'status' => 'Waiting HSE'
-                                    ],
-                                    [
-                                        'id' => 102,
-                                        'doc_no' => 'WP-2024-002',
-                                        'applicant' => 'Siti Aminah',
-                                        'company' => 'PT. Baja Indonesia',
-                                        'safety_types' => ['Pekerjaan Listrik'],
-                                        'date' => '2024-01-15',
-                                        'status' => 'Waiting HSE'
-                                    ],
-                                ];
-
-                                $counter = 1;
-                            @endphp
-
-                            @foreach($wps as $wp)
-                                @if($wp['status'] == 'Waiting HSE')
-                                    @foreach($wp['safety_types'] as $type)
-                                        <tr>
-                                            <td class="text-center">{{ $counter++ }}</td>
-                                            <td class="fw-bold">{{ $wp['doc_no'] }}</td>
-                                            <td class="fw-bold text-primary">
-                                                @php
-                                                    $code = match ($type) {
-                                                        'Kerja Panas' => 'KP',
-                                                        'Bekerja di Ketinggian' => 'K',
-                                                        'Pekerjaan Listrik' => 'L',
-                                                        'Memasuki Ruang Terbatas' => 'RT',
-                                                        default => 'GEN'
-                                                    };
-                                                    echo $wp['doc_no'] . '/' . $code . '/01';
-                                                @endphp
-                                            </td>
-                                            <td>{{ $wp['applicant'] }}</td>
-                                            <td>{{ $wp['company'] }}</td>
-                                            <td>
-                                                <span class="badge bg-info text-dark">
-                                                    <i class="bi bi-exclamation-triangle me-1"></i> {{ $type }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $wp['date'] }}</td>
-                                            <td class="text-center">
-                                                <span class="badge bg-warning text-dark">Menunggu Review</span>
-                                            </td>
-                                            <td class="text-center">
-                                                <a href="{{ route('hse.work_permit.detail', ['id' => $wp['id'], 'type' => $type, 'status' => 'Waiting HSE']) }}"
-                                                    class="btn btn-primary btn-sm" title="Lihat Detail">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @endif
-                            @endforeach
+                            @php $counter = 1; @endphp
+                            @forelse($waitingWps as $wp)
+                                <tr>
+                                    <td class="text-center">{{ $counter++ }}</td>
+                                    <td class="fw-bold">{{ $wp->doc_no }}</td>
+                                    <td class="fw-bold text-primary">
+                                        @php
+                                            $code = match ($wp->work_type) {
+                                                'Kerja Panas' => 'KP',
+                                                'Bekerja di Ketinggian' => 'K',
+                                                'Pekerjaan Listrik' => 'L',
+                                                'Memasuki Ruang Terbatas' => 'RT',
+                                                default => 'GEN'
+                                            };
+                                            echo $wp->doc_no . '/' . $code . '/01';
+                                        @endphp
+                                    </td>
+                                    <td>{{ $wp->vendor->pic_name ?? 'User' }}</td>
+                                    <td>{{ $wp->vendor->name }}</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            <i class="bi bi-exclamation-triangle me-1"></i> {{ $wp->work_type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $wp->updated_at->format('d M Y') }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning text-dark">Menunggu Review</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ route('hse.work_permit.detail', $wp->id) }}" class="btn btn-primary btn-sm"
+                                            title="Lihat Detail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">Tidak ada Work Permit yang menunggu review.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -158,58 +132,40 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                $counterSchedule = 1;
-                                $scheduledWps = [
-                                    [
-                                        'id' => 103,
-                                        'doc_no' => 'WP-2024-003',
-                                        'applicant' => 'Rudi Hartono',
-                                        'company' => 'PT. Sejahtera',
-                                        'safety_type' => 'Pekerjaan Listrik',
-                                        'schedule' => '2024-01-16 09:00',
-                                        'status' => 'Scheduled'
-                                    ]
-                                ];
-                            @endphp
-
-                            @foreach($scheduledWps as $wp)
+                            @php $counterSchedule = 1; @endphp
+                            @forelse($scheduledWps as $wp)
                                 <tr>
                                     <td class="text-center">{{ $counterSchedule++ }}</td>
-                                    <td class="fw-bold">{{ $wp['doc_no'] }}</td>
+                                    <td class="fw-bold">{{ $wp->doc_no }}</td>
                                     <td class="fw-bold text-primary">
-                                        @php
-                                            $code = match ($wp['safety_type']) {
-                                                'Kerja Panas' => 'KP',
-                                                'Bekerja di Ketinggian' => 'K',
-                                                'Pekerjaan Listrik' => 'L',
-                                                'Memasuki Ruang Terbatas' => 'RT',
-                                                default => 'GEN'
-                                            };
-                                            echo $wp['doc_no'] . '/' . $code . '/01';
-                                        @endphp
+                                        {{-- Gunakan logika penomoran yang sama --}}
+                                        {{ $wp->doc_no }}/GEN/01
                                     </td>
-                                    <td>{{ $wp['applicant'] }}</td>
-                                    <td>{{ $wp['company'] }}</td>
+                                    <td>{{ $wp->vendor->pic_name ?? 'Admin' }}</td>
+                                    <td>{{ $wp->vendor->name }}</td>
                                     <td>
                                         <span class="badge bg-secondary">
-                                            {{ $wp['safety_type'] }}
+                                            {{ $wp->work_type }}
                                         </span>
                                     </td>
                                     <td>
-                                        {{ date('d M Y H:i', strtotime($wp['schedule'])) }}
+                                        {{ $wp->induction_schedule ? $wp->induction_schedule->format('d M Y H:i') : '-' }}
                                     </td>
                                     <td class="text-center">
                                         <span class="badge bg-success">Siap Induction</span>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('hse.work_permit.detail', ['id' => $wp['id'], 'type' => $wp['safety_type'], 'status' => 'Scheduled', 'schedule' => $wp['schedule']]) }}"
-                                            class="btn btn-success btn-sm" title="Upload Dokumen Induction">
+                                        <a href="{{ route('hse.work_permit.detail', $wp->id) }}" class="btn btn-success btn-sm"
+                                            title="Upload Bukti Dokumen">
                                             <i class="bi bi-upload"></i>
                                         </a>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">Tidak ada jadwal induction saat ini.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

@@ -3,11 +3,10 @@
 @section('title', 'Edit Detail Jenis Pekerjaan Berbahaya')
 
 @push('styles')
-
     <style>
         .form-check-input:checked {
-            background-color: #ffc107; /* Warna Peringatan untuk Edit */
-            border-color: #ffc107;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
         }
     </style>
 @endpush
@@ -33,43 +32,38 @@
             <!-- Main Card -->
             <div class="card card-warning card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Detail Jenis Pekerjaan Berbahaya</h3>
+                    <h3 class="card-title">Edit Jenis Pekerjaan Berbahaya</h3>
                 </div>
-                
-                <form action="" method="POST" id="formMasterIKB">
+
+                <form action="{{ route('hse.master-ikb.update', $ikb->id) }}" method="POST" id="formMasterIKB">
+                    @csrf
+                    @method('PUT')
+                    
                     <div class="card-body">
                         <!-- Nama Pekerjaan -->
                         <div class="mb-4">
-                            <label for="namaPekerjaan" class="form-label fw-bold">Nama Pekerjaan <span class="text-danger">*</span></label>
+                            <label for="namaPekerjaan" class="form-label fw-bold">Nama Pekerjaan <span
+                                    class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="namaPekerjaan" name="nama_pekerjaan"
-                                value="Kerja Panas" required>
+                                placeholder="Masukkan Nama Pekerjaan" value="{{ old('nama_pekerjaan', $ikb->name) }}" required>
                         </div>
 
                         <div class="row">
-                            <!-- Kolom Kiri: APD -->
+                            <!-- Kolom Kiri: Alat Pelindung Diri (APD) -->
                             <div class="col-md-6 mb-4">
                                 <div class="card shadow-none border">
                                     <div class="card-header bg-light">
                                         <h5 class="card-title fw-bold mb-0">Alat Pelindung Diri</h5>
                                     </div>
                                     <div class="card-body">
-                                        @php
-                                            // Daftar APD
-                                            $apds = [
-                                                'Helmet', 'Safety Shoes', 'Sarung Tangan', 'Kaca Mata Safety', 'Masker',
-                                                'Pelindung Wajah', 'Body Harnest', 'Kedok Las', 'Air Line Respirator',
-                                                'Breathing Apparatus', 'Baju Tahan Panas'
-                                            ];
-                                            // Data Dummy Terpilih
-                                            $selectedApds = ['Helmet', 'Safety Shoes', 'Sarung Tangan', 'Kedok Las', 'Baju Tahan Panas'];
-                                        @endphp
                                         <div class="d-flex flex-column gap-2">
                                             @foreach($apds as $apd)
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="{{ $apd }}" id="apd_{{ Str::slug($apd) }}"
-                                                        {{ in_array($apd, $selectedApds) ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="apd_{{ Str::slug($apd) }}">
-                                                        {{ $apd }}
+                                                    <input class="form-check-input" type="checkbox" name="apd[]" value="{{ $apd->name }}"
+                                                        id="apd_{{ $apd->id }}"
+                                                        {{ in_array($apd->name, $ikb->recommended_apd ?? []) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="apd_{{ $apd->id }}">
+                                                        {{ $apd->name }}
                                                     </label>
                                                 </div>
                                             @endforeach
@@ -85,23 +79,14 @@
                                         <h5 class="card-title fw-bold mb-0">Pengamanan</h5>
                                     </div>
                                     <div class="card-body">
-                                        @php
-                                            // Daftar Pengaman
-                                            $pengamans = [
-                                                'Isolasi Power Supply', 'Hydr. System Off', 'Bekas Gas Beracun', 'Tag Out',
-                                                'Log Out', 'APAR', 'Hydrant', 'Safety Line',
-                                                'Lampu Penerangan DC 50 Volt'
-                                            ];
-                                            // Data Dummy Terpilih
-                                            $selectedPengamans = ['Tag Out', 'Log Out', 'APAR'];
-                                        @endphp
                                         <div class="d-flex flex-column gap-2">
-                                            @foreach($pengamans as $pengaman)
+                                            @foreach($safeties as $safety)
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" value="{{ $pengaman }}" id="pengaman_{{ Str::slug($pengaman) }}"
-                                                        {{ in_array($pengaman, $selectedPengamans) ? 'checked' : '' }}>
-                                                    <label class="form-check-label" for="pengaman_{{ Str::slug($pengaman) }}">
-                                                        {{ $pengaman }}
+                                                    <input class="form-check-input" type="checkbox" name="pengaman[]" value="{{ $safety->name }}"
+                                                        id="safety_{{ $safety->id }}"
+                                                        {{ in_array($safety->name, $ikb->recommended_safety ?? []) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="safety_{{ $safety->id }}">
+                                                        {{ $safety->name }}
                                                     </label>
                                                 </div>
                                             @endforeach
@@ -113,7 +98,7 @@
                     </div>
 
                     <div class="card-footer text-end">
-                        <button type="button" class="btn btn-warning px-4" id="btnSimpan">
+                        <button type="submit" class="btn btn-warning text-white" id="btnSimpan">
                             <i class="bi bi-save"></i> Simpan Perubahan
                         </button>
                     </div>
@@ -124,58 +109,25 @@
 @endsection
 
 @push('scripts')
-
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Verifikasi Simpan Data
-            const btnSimpan = document.getElementById('btnSimpan');
-            const inputNamaPekerjaan = document.getElementById('namaPekerjaan');
-
-            if (btnSimpan) {
-                btnSimpan.addEventListener('click', function() {
-                    const namaPekerjaan = inputNamaPekerjaan.value;
-
-                    // Validasi: Cek jika nama pekerjaan kosong
-                    if (!namaPekerjaan) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: 'Perubahan tidak bisa disimpan karena Nama Pekerjaan Kosong.',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#d33',
-                        });
-                        return;
-                    }
-
-                    // Tampilkan Konfirmasi Simpan
-                    Swal.fire({
-                        title: 'Apakah anda yakin?',
-                        text: "Untuk menyimpan perubahan ini?",
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#ffc107',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Perbarui',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Simulasi Berhasil Simpan
-                            Swal.fire({
-                                title: 'Berhasil!',
-                                text: 'Perubahan berhasil disimpan.',
-                                icon: 'success',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = "{{ route('hse.master-ikb') }}";
-                            });
-                        }
-                    });
-                });
-            }
+        document.getElementById('formMasterIKB').addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: "Pastikan data sudah benar.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
         });
     </script>
 @endpush

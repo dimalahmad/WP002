@@ -80,9 +80,7 @@
                                         <a href="{{ route('user.master-vendor.history') }}" class="btn btn-secondary me-2">
                                             <i class="bi bi-x-circle"></i> Batal
                                         </a>
-                                        <button type="button" class="btn btn-danger me-2" id="btnBlacklist">
-                                            <i class="bi bi-slash-circle"></i> Blacklist
-                                        </button>
+
                                         <button type="submit" class="btn btn-warning text-white">
                                             <i class="bi bi-save"></i> Perbarui Data
                                         </button>
@@ -247,50 +245,6 @@
             const form = document.getElementById('formEditVendor');
             const inputNamaVendor = document.getElementById('inputNamaVendor');
             const inputNamaPIC = document.getElementById('inputNamaPIC');
-            const btnBlacklist = document.getElementById('btnBlacklist');
-
-            // Logika Tombol Blacklist
-            if (btnBlacklist) {
-                btnBlacklist.addEventListener('click', function () {
-                    Swal.fire({
-                        title: 'Konfirmasi Blacklist',
-                        text: 'Apakah anda yakin ingin memasukkan vendor ini ke daftar blacklist?',
-                        icon: 'warning',
-                        html: `
-                                                            <p class="text-muted mb-2 text-start">Silakan masukkan alasan blacklist:</p>
-                                                            <textarea id="swal-input-reason" class="form-control" rows="3" placeholder="Contoh: Kinerja buruk, pelanggaran kontrak, dokumen palsu, dll..."></textarea>
-                                                        `,
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Blacklist',
-                        cancelButtonText: 'Batal',
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        reverseButtons: true,
-                        focusConfirm: false,
-                        preConfirm: () => {
-                            const reason = document.getElementById('swal-input-reason').value;
-                            if (!reason) {
-                                Swal.showValidationMessage('Alasan tidak boleh kosong');
-                            }
-                            return reason;
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Notifikasi Sukses
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: 'Vendor berhasil ditambahkan ke blacklist.',
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                // Opsional: Redirect atau perbarui antarmuka
-                                window.location.href = "{{ route('user.master-vendor') }}";
-                            });
-                        }
-                    });
-                });
-            }
 
             if (form) {
                 form.addEventListener('submit', function (e) {

@@ -44,50 +44,38 @@
 
 @section('content')
     @php
-        // Tentukan status dari parameter query (prioritas) atau logika dummy berdasarkan ID
-        $id = request()->route('id') ?? 1;
-        $reqStatus = request('status');
-
-        if ($reqStatus && in_array($reqStatus, ['Waiting Corsec', 'Waiting HSE', 'Active', 'Expired'])) {
-            $status = $reqStatus;
-        } else {
-            $statuses = ['Waiting Corsec', 'Waiting HSE', 'Active', 'Expired'];
-            $statusIndex = ($id - 1) % 4;
-            $status = $statuses[$statusIndex] ?? 'Active';
-        }
+        // DATA DINAMIS DARI CONTROLLER ($wp)
+        $status = $wp->status;
 
         $statusBadgeClass = match ($status) {
-            'Waiting Corsec' => 'bg-warning text-dark',
-            'Waiting HSE' => 'bg-info text-dark',
-            'Active' => 'bg-success',
-            'Expired' => 'bg-danger', // Diubah menjadi Merah untuk Kedaluwarsa
-            default => 'bg-primary'
+            'waiting_corsec' => 'bg-warning text-dark',
+            'waiting_hse' => 'bg-info text-dark',
+            'active' => 'bg-success',
+            'scheduled' => 'bg-warning text-dark',
+            'expired' => 'bg-danger',
+            'rejected' => 'bg-danger',
+            default => 'bg-secondary'
         };
 
-        // Dummy Data
-        // Dummy Data - SIMULASI VENDOR BLACKLIST
-        // Simulasikan Vendor sebagai "Suspect" atau memiliki riwayat blacklist untuk demo
-        $vendor = 'PT. Teknologi Maju';
-        $isVendorBlacklisted = true; // Ubah ke true untuk menguji VISUALISASI BLACKLIST DEMO
+        // Vendor Data
+        $vendor = $wp->vendor->name;
+        $isVendorBlacklisted = $wp->vendor->status === 'blacklist';
+
         $vendorLabelHtml = $isVendorBlacklisted
             ? $vendor . ' <span class="badge bg-danger ms-2"><i class="bi bi-exclamation-triangle-fill"></i> BLACKLISTED</span>'
             : $vendor . ' <span class="badge bg-success ms-2" style="font-size: 0.6em;"><i class="bi bi-check-circle"></i> TERVERIFIKASI</span>';
-        $area = 'Area Kantor Pusat';
-        $sta = 'Jasa Rutin';
-        $no_jo = 'JO-2023-001';
-        $uraian = 'Pemeliharaan perangkat jaringan dan server di Gedung Utama.';
-        $startDate = date('Y-m-d');
+
+        $area = $wp->location;
+        $sta = 'Jasa Rutin'; // Default/Hardcode sementara
+        $no_jo = 'JO-' . date('Y') . '-001'; // Default
+        $uraian = $wp->work_description;
+        $startDate = $wp->start_date->format('Y-m-d');
         $startTime = '08:00';
-        $endDate = date('Y-m-d', strtotime('+3 days'));
+        $endDate = $wp->end_date->format('Y-m-d');
         $endTime = '17:00';
 
-        // Dummy Karyawan
-        $employees = [
-            ['name' => 'Andi Saputra', 'nik' => '1234567890123456', 'gender' => 'Laki-laki', 'blood' => 'O', 'is_blacklisted' => false],
-            ['name' => 'Budi Santoso', 'nik' => '9876543210987654', 'gender' => 'Laki-laki', 'blood' => 'A', 'is_blacklisted' => false],
-            ['name' => 'Citra Dewi', 'nik' => '4567891230123456', 'gender' => 'Perempuan', 'blood' => 'B', 'is_blacklisted' => false],
-            ['name' => 'Dudung (Blacklist)', 'nik' => '9999999999999999', 'gender' => 'Laki-laki', 'blood' => 'AB', 'is_blacklisted' => true],
-        ];
+        // Employee Data
+        $employees = $wp->employees;
     @endphp
 
     <div class="app-content-header">
@@ -139,7 +127,7 @@
                         <div class="progress"
                             style="height: 4px; position: absolute; top: 25px; left: 5%; right: 5%; z-index: 1;">
                             <div class="progress-bar bg-success" role="progressbar"
-                                style="width: {{ $status == 'Expired' ? '100%' : ($status == 'Active' ? '80%' : ($status == 'Scheduled' ? '60%' : ($status == 'Waiting HSE' ? '40%' : ($status == 'Waiting Corsec' ? '20%' : '0%')))) }};"
+                                style="width: {{ $status == 'Expired' ? '100%' : ($status == 'Active' ? '100%' : ($status == 'Scheduled' ? '80%' : ($status == 'Waiting HSE' ? '40%' : ($status == 'Waiting Corsec' ? '20%' : '0%')))) }};"
                                 aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
 
@@ -147,83 +135,61 @@
                         <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
                             <!-- Langkah 1: Draf/Diajukan -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Waiting Corsec', 'Waiting HSE', 'Scheduled', 'Active', 'Expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['waiting_corsec', 'waiting_hse', 'scheduled', 'active', 'expired', 'rejected']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-file-earmark-plus fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Penerbitan<br>Work Permit</span>
-                                <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 08:00</small>
-                                <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Budi
-                                    (User)</small>
+                                <small class="text-muted d-block"
+                                    style="font-size: 0.75rem;">{{ $wp->created_at->format('d M H:i') }}</small>
                             </div>
 
                             <!-- Langkah 2: Verifikasi Corsec -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Waiting HSE', 'Scheduled', 'Active', 'Expired']) ? 'bg-success' : ($status == 'Waiting Corsec' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['waiting_hse', 'scheduled', 'active', 'expired']) ? 'bg-success' : ($status == 'waiting_corsec' ? 'bg-primary' : (($status == 'rejected') ? 'bg-danger' : 'bg-secondary')) }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-building-check fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Verifikasi Corsec</span>
-                                @if(in_array($status, ['Waiting HSE', 'Scheduled', 'Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 09:30</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Siti
-                                        (Corsec)</small>
-                                @endif
                             </div>
 
                             <!-- Langkah 3: Tinjauan HSE -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Scheduled', 'Active', 'Expired']) ? 'bg-success' : ($status == 'Waiting HSE' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['scheduled', 'active', 'expired']) ? 'bg-success' : ($status == 'waiting_hse' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-search fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Review HSE</span>
-                                @if(in_array($status, ['Scheduled', 'Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 13:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Admin
-                                        HSE</small>
-                                @endif
                             </div>
 
                             <!-- Langkah 4: Induksi Keselamatan -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : ($status == 'Scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['active', 'expired']) ? 'bg-success' : ($status == 'scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-person-badge fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Safety Induction</span>
-                                @if(in_array($status, ['Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">15 Jan 09:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Admin
-                                        HSE</small>
+                                <span class="d-block mt-2 fw-bold small">Safety Induction<br>& Cetak ID</span>
+                                @if($status == 'scheduled')
+                                    <small class="d-block text-warning fw-bold" style="font-size: 0.7rem;">Cek Jadwal!</small>
                                 @endif
                             </div>
 
                             <!-- Langkah 5: Aktif (Tetap Hijau jika Kedaluwarsa) -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['active', 'expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-flag fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Izin Aktif</span>
-                                @if(in_array($status, ['Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">15 Jan 10:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Valid by
-                                        System</small>
-                                @endif
+                                <span class="d-block mt-2 fw-bold small">Full Access</span>
                             </div>
 
                             <!-- Langkah 6: Kedaluwarsa (Tahap Baru) -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ $status == 'Expired' ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ $status == 'expired' ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-check-circle-fill fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Izin Berakhir</span>
-                                @if($status == 'Expired')
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">20 Jan 17:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Selesai</small>
-                                @endif
+                                <span class="d-block mt-2 fw-bold small">Selesai/Expired</span>
                             </div>
                         </div>
                     </div>
@@ -302,7 +268,6 @@
                                                 <label class="form-check-label">Bekerja di Ketinggian</label>
                                             </div>
 
-
                                         </div>
                                     </div>
                                 </div>
@@ -354,35 +319,35 @@
                                 <div style="max-height: 500px; overflow-y: auto;">
                                     @foreach($employees as $emp)
                                         <div
-                                            class="employee-card d-flex align-items-center {{ $emp['is_blacklisted'] ? 'border-danger bg-danger bg-opacity-10' : '' }}">
+                                            class="employee-card d-flex align-items-center {{ $emp->is_blacklisted ? 'border-danger bg-danger bg-opacity-10' : '' }}">
                                             <div class="me-3">
-                                                <div class="avatar-circle {{ $emp['is_blacklisted'] ? 'bg-danger' : '' }}">
+                                                <div class="avatar-circle {{ $emp->is_blacklisted ? 'bg-danger' : '' }}">
                                                     <i
-                                                        class="bi {{ $emp['is_blacklisted'] ? 'bi-slash-circle' : 'bi-person' }}"></i>
+                                                        class="bi {{ $emp->is_blacklisted ? 'bi-slash-circle' : 'bi-person' }}"></i>
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1">
                                                 <h6
-                                                    class="mb-0 fw-bold {{ $emp['is_blacklisted'] ? 'text-decoration-line-through text-danger' : '' }}">
-                                                    {{ $emp['name'] }}
+                                                    class="mb-0 fw-bold {{ $emp->is_blacklisted ? 'text-decoration-line-through text-danger' : '' }}">
+                                                    {{ $emp->name }}
                                                 </h6>
-                                                <small class="text-muted d-block">{{ $emp['nik'] }}</small>
+                                                <small class="text-muted d-block">{{ $emp->nik }}</small>
                                                 <div class="mt-1">
-                                                    @if($emp['is_blacklisted'])
+                                                    @if($emp->is_blacklisted)
                                                         <span class="badge bg-danger">BLACKLISTED</span>
                                                     @else
-                                                        <span class="badge border text-dark">{{ $emp['gender'] }}</span>
-                                                        <span class="badge border text-dark">Gol. Darah {{ $emp['blood'] }}</span>
+                                                        <span class="badge border text-dark">{{ $emp->gender ?? '-' }}</span>
+                                                        <span class="badge border text-dark">Gol. Darah {{ $emp->blood_type ?? '-' }}</span>
                                                     @endif
                                                 </div>
                                             </div>
 
                                             <!-- Logika Tombol Aksi -->
                                             <div class="ms-auto ps-2">
-                                                @if($status == 'Active' && !$emp['is_blacklisted'])
+                                                @if(in_array($status, ['active', 'scheduled']) && !$emp->is_blacklisted)
                                                     <!-- Tampilkan Tombol ID Card -->
                                                     <button type="button" class="btn btn-sm btn-outline-dark"
-                                                        onclick="showIdCard('{{ $emp['name'] }}', '{{ $emp['nik'] }}', '{{ $emp['gender'] }}')">
+                                                        onclick="showIdCard('{{ $emp->name }}', '{{ $emp->nik }}', '{{ $emp->gender }}')">
                                                         <i class="bi bi-person-badge"></i> ID Card
                                                     </button>
                                                 @endif
@@ -502,7 +467,7 @@
                             Posco / Steel</h2>
                         <h3 style="margin: 5px 0 0; font-size: 14pt; font-weight: bold; text-decoration: underline;">SURAT
                             IZIN KERJA (WORK PERMIT)</h3>
-                        <p style="margin: 5px 0 0; font-size: 10pt;">No. Dokumen: WP-2024-001</p>
+                        <p style="margin: 5px 0 0; font-size: 10pt;">No. Dokumen: {{ $wp->doc_no }}</p>
                     </td>
                     <td style="width: 15%;"></td>
                 </tr>
@@ -525,7 +490,7 @@
                     <tr>
                         <td>Periode</td>
                         <td>:</td>
-                        <td style="border-bottom: 1px dotted #000;">14 Jan 2024 s.d 14 Jan 2025</td>
+                        <td style="border-bottom: 1px dotted #000;">{{ $wp->start_date->isoFormat('D MMM Y') }} s.d {{ $wp->end_date->isoFormat('D MMM Y') }}</td>
                     </tr>
                 </table>
 
@@ -545,11 +510,11 @@
                         <th style="padding: 5px; text-align: center;">Status</th>
                     </tr>
                     @foreach($employees as $index => $emp)
-                        @if(!$emp['is_blacklisted'])
+                        @if(!$emp->is_blacklisted)
                             <tr>
                                 <td style="padding: 5px; text-align: center;">{{ $index + 1 }}</td>
-                                <td style="padding: 5px;">{{ $emp['name'] }}</td>
-                                <td style="padding: 5px; text-align: center;">{{ $emp['nik'] }}</td>
+                                <td style="padding: 5px;">{{ $emp->name }}</td>
+                                <td style="padding: 5px; text-align: center;">{{ $emp->nik }}</td>
                                 <td style="padding: 5px; text-align: center;">OK</td>
                             </tr>
                         @endif
@@ -593,7 +558,7 @@
             <div style="text-align: center; margin-bottom: 30px;">
                 <h1 style="font-size: 24pt; font-weight: bold; margin-bottom: 10px; color: #198754;">CERTIFICATE OF SAFETY
                     INDUCTION</h1>
-                <p style="font-size: 12pt;">No. Ref: SI-2024/WP-001</p>
+                <p style="font-size: 12pt;">No. Ref: SI-{{ date('Y') }}/{{ $wp->doc_no }}</p>
                 <hr style="border: 2px solid #198754;">
             </div>
 
@@ -613,11 +578,11 @@
                 <!-- Filter hanya yang tidak di-blacklist -->
                 @php $counter = 1; @endphp
                 @foreach($employees as $emp)
-                    @if(!$emp['is_blacklisted'])
+                    @if(!$emp->is_blacklisted)
                         <tr>
                             <td style="padding: 8px; text-align: center;">{{ $counter++ }}</td>
-                            <td style="padding: 8px;">{{ $emp['name'] }}</td>
-                            <td style="padding: 8px; text-align: center;">{{ $emp['nik'] }}</td>
+                            <td style="padding: 8px;">{{ $emp->name }}</td>
+                            <td style="padding: 8px; text-align: center;">{{ $emp->nik }}</td>
                         </tr>
                     @endif
                 @endforeach

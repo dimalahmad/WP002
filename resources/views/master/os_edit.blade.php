@@ -199,9 +199,7 @@
                                         <a href="{{ route('user.master-os.history') }}" class="btn btn-secondary me-2">
                                             <i class="bi bi-x-circle"></i> Batal
                                         </a>
-                                        <button type="button" class="btn btn-danger me-2" id="btnBlacklist">
-                                            <i class="bi bi-slash-circle"></i> Blacklist
-                                        </button>
+
                                         <button type="submit" class="btn btn-warning text-white">
                                             <i class="bi bi-save"></i> Perbarui Data
                                         </button>
@@ -390,52 +388,6 @@
             const form = document.getElementById('formEditOS');
             const inputNIK = document.getElementById('inputNIK');
             const inputNama = document.getElementById('inputNama');
-            const btnBlacklist = document.getElementById('btnBlacklist');
-
-            // Logika Tombol Blacklist
-            if (btnBlacklist) {
-                btnBlacklist.addEventListener('click', function () {
-                    Swal.fire({
-                        title: 'Konfirmasi Blacklist',
-                        text: 'Apakah anda yakin ingin memasukkan karyawan ini ke daftar blacklist?',
-                        icon: 'warning',
-                        html: `
-                                                        <p class="text-muted mb-2 text-start">Silakan masukkan alasan blacklist:</p>
-                                                        <textarea id="swal-input-reason" class="form-control" rows="3" placeholder="Contoh: Pelanggaran berat K3, dokumen palsu, dll..."></textarea>
-                                                    `,
-                        showCancelButton: true,
-                        confirmButtonText: 'Ya, Blacklist',
-                        cancelButtonText: 'Batal',
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        reverseButtons: true,
-                        focusConfirm: false,
-                        preConfirm: () => {
-                            const reason = document.getElementById('swal-input-reason').value;
-                            if (!reason) {
-                                Swal.showValidationMessage('Alasan tidak boleh kosong');
-                            }
-                            return reason;
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Notifikasi Sukses
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: 'Karyawan berhasil ditambahkan ke blacklist.', // Menggunakan kata-kata yang jelas
-                                showConfirmButton: false,
-                                timer: 1500
-                            }).then(() => {
-                                // Opsional: Redirect atau perbarui UI
-                                window.location.href = "{{ route('user.master-os') }}";
-                            });
-                        } else if (result.dismiss === Swal.DismissReason.cancel) {
-                            // Tidak ada tindakan khusus untuk batal, perilaku standar
-                        }
-                    });
-                });
-            }
 
             if (form) {
                 form.addEventListener('submit', function (e) {

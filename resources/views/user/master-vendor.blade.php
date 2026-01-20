@@ -21,9 +21,7 @@
                     <h3 class="mb-0 fw-bold">Master Vendor</h3>
                 </div>
                 <div class="col-sm-6 text-end">
-                    <a href="{{ route('user.blacklist-vendor') }}" class="btn btn-danger me-2">
-                        <i class="bi bi-slash-circle"></i> Blacklist
-                    </a>
+
                     <a href="{{ route('user.master-vendor.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-lg"></i> Tambah Vendor Baru
                     </a>
@@ -62,64 +60,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                $vendorNames = [
-                                    'PT. Teknologi Indonesia',
-                                    'PT. Baja Steel Indonesia',
-                                    'CV. Maju Jaya Abadi',
-                                    'PT. Cilegon Engineering',
-                                    'CV. Baratech Service',
-                                    'PT. Global Supply Chain',
-                                    'PT. Sarana Konstruksi Utama',
-                                    'CV. Teknik Mandiri',
-                                    'PT. Delta Safety Solution',
-                                    'CV. Berkah Cahaya',
-                                    'PT. Inti Karya Semesta',
-                                    'PT. Pilar Beton Perkasa',
-                                    'CV. Elektronika Dasar',
-                                    'PT. Mega Trans Logistik',
-                                    'CV. Sumber Makmur',
-                                    'PT. Buana Citra Konsultan',
-                                    'CV. Mitra Sejahtera',
-                                    'PT. Harapan Bangsa',
-                                    'CV. Karya Duta',
-                                    'PT. Universal Trading',
-                                    'PT. Galangan Samudera',
-                                    'CV. Arta Graha',
-                                    'PT. Sentosa Abadi',
-                                    'CV. Bintang Mas',
-                                    'PT. Anugerah Teknik',
-                                    'CV. Multi Sarana',
-                                    'PT. Prima Daya Energy',
-                                    'CV. Tunas Harapan',
-                                    'PT. Wira Sakti',
-                                    'CV. Kencana Alam'
-                                ];
-
-                                $vendors = [];
-                                for ($i = 0; $i < 30; $i++) {
-                                    $statusList = ['Active', 'Inactive'];
-
-                                    $vendors[] = [
-                                        'vendor' => $vendorNames[$i] ?? 'Vendor ' . ($i + 1),
-                                        'pic' => 'PIC ' . explode(' ', $vendorNames[$i] ?? 'Vendor')[1],
-                                        'phone' => '08' . rand(11, 19) . '-' . rand(1000, 9999) . '-' . rand(1000, 9999),
-                                        'status' => $statusList[array_rand($statusList)],
-                                    ];
-                                }
-                            @endphp
-
-                            @foreach($vendors as $index => $v)
+                            @forelse($vendors as $index => $v)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $v['vendor'] }}</td>
-                                    <td>{{ $v['pic'] }}</td>
-                                    <td>{{ $v['phone'] }}</td>
+                                    <td class="fw-bold">{{ $v->name }}</td>
+                                    <td>{{ $v->pic_name ?? '-' }}</td>
+                                    <td>{{ $v->phone ?? '-' }}</td>
                                     <td class="text-center">
-                                        @if($v['status'] == 'Active')
-                                            <span class="badge bg-success">Active</span>
+                                        @if($v->is_blacklisted)
+                                            <span class="badge bg-danger">Blacklisted</span>
                                         @else
-                                            <span class="badge bg-secondary">Inactive</span>
+                                            <span class="badge bg-success">Active</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
@@ -127,10 +78,15 @@
                                         <div class="btn-group btn-group-sm">
                                             <a href="{{ route('user.master-vendor.history') }}" class="btn btn-primary"
                                                 title="Detail"><i class="bi bi-eye"></i></a>
+                                            <!-- Edit button removed as per request -->
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center">Data vendor belum tersedia.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

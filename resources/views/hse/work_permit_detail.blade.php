@@ -29,7 +29,7 @@
             font-size: 1.2rem;
         }
 
-        /* Read-only form styling enhancement */
+        /* Peningkatan gaya formulir baca-saja */
         .form-control:disabled,
         .form-control[readonly] {
             background-color: #f8f9fa;
@@ -50,36 +50,31 @@
 
 @section('content')
     @php
-        // Determine status and type
-        $status = request('status') ?? 'Waiting HSE';
-        $type = request('type') ?? 'Kerja Panas';
-        $schedule = request('schedule') ?? null;
+        // DATA DINAMIS DARI CONTROLLER ($wp)
+        // Pastikan variabel $wp dikirim dari HseController -> method detail()
+        $status = $wp->status;
+        $workType = $wp->work_type;
 
+        // Helper untuk status badge diakses via accessor model atau logic manual
         $statusBadgeClass = match ($status) {
-            'Waiting Corsec' => 'bg-warning text-dark',
-            'Waiting HSE' => 'bg-info text-dark',
-            'Scheduled' => 'bg-primary',
-            'Active' => 'bg-success',
-            'Inactive' => 'bg-secondary',
-            default => 'bg-primary'
+            'waiting_corsec' => 'bg-warning text-dark',
+            'waiting_hse' => 'bg-info text-dark',
+            'scheduled' => 'bg-primary',
+            'active' => 'bg-success',
+            'rejected' => 'bg-danger',
+            'expired' => 'bg-danger',
+            default => 'bg-secondary'
         };
 
-        // Dummy Data (Matching Corsec View basically)
-        $vendor = 'PT. Maju Jaya';
-        $area = 'Area Pabrik Gedung A';
-        $sta = 'Jasa Rutin';
-        $no_jo = 'JO-2023-001';
-        $uraian = 'Perbaikan pipa steam bocor di area produksi.';
-        $startDate = date('Y-m-d');
-        $startTime = '08:00';
-        $endDate = date('Y-m-d', strtotime('+3 days'));
-        $endTime = '17:00';
-
-        // Dummy Employees
-        $employees = [
-            ['name' => 'Ahmad Fulan', 'nik' => '1234567890123456', 'gender' => 'Laki-laki', 'blood' => 'O'],
-            ['name' => 'Jhon Doe', 'nik' => '9876543210987654', 'gender' => 'Laki-laki', 'blood' => 'A'],
-        ];
+        $statusLabel = match ($status) {
+            'waiting_corsec' => 'Verifikasi Corsec',
+            'waiting_hse' => 'Review HSE',
+            'scheduled' => 'Jadwal Induction',
+            'active' => 'Aktif',
+            'rejected' => 'Ditolak',
+            'expired' => 'Kadaluarsa',
+            default => 'Draft/Selesai'
+        };
     @endphp
 
     <div class="app-content-header">
@@ -104,94 +99,82 @@
             <!-- TRACKING TIMELINE -->
             <div class="card card-outline card-primary mb-4">
                 <div class="card-header bg-white border-0 pb-0">
-                    <h5 class="card-title fw-bold">Status Tracking</h5>
+                    <h5 class="card-title fw-bold">Status Tracking: <span
+                            class="badge {{ $statusBadgeClass }}">{{ $statusLabel }}</span></h5>
                 </div>
                 <div class="card-body pt-3 pb-2">
                     <div class="position-relative mb-2">
                         <div class="progress"
                             style="height: 4px; position: absolute; top: 25px; left: 5%; right: 5%; z-index: 1;">
                             <div class="progress-bar bg-success" role="progressbar"
-                                style="width: {{ $status == 'Expired' ? '100%' : ($status == 'Active' ? '80%' : ($status == 'Scheduled' ? '60%' : ($status == 'Waiting HSE' ? '40%' : ($status == 'Waiting Corsec' ? '20%' : '0%')))) }};"
+                                style="width: {{ $status == 'expired' ? '100%' : ($status == 'active' ? '100%' : ($status == 'scheduled' ? '80%' : ($status == 'waiting_hse' ? '40%' : ($status == 'waiting_corsec' ? '20%' : '0%')))) }};"
                                 aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                         <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
-                            <!-- Step 1: Draft/Submitted -->
+                            <!-- Step 1: Draft/Diajukan -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Waiting Corsec', 'Waiting HSE', 'Scheduled', 'Active', 'Expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['waiting_corsec', 'waiting_hse', 'scheduled', 'active', 'expired', 'finished']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-file-earmark-plus fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Penerbitan<br>Work Permit</span>
-                                <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 08:00</small>
-                                <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Budi
-                                    (User)</small>
+                                <small class="text-muted d-block"
+                                    style="font-size: 0.75rem;">{{ $wp->created_at->format('d M H:i') }}</small>
                             </div>
 
-                            <!-- Step 2: Corsec Verification -->
+                            <!-- Step 2: Verifikasi Corsec -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Waiting HSE', 'Scheduled', 'Active', 'Expired']) ? 'bg-success' : ($status == 'Waiting Corsec' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['waiting_hse', 'scheduled', 'active', 'expired', 'finished']) ? 'bg-success' : ($status == 'waiting_corsec' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-building-check fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Verifikasi Corsec</span>
-                                @if(in_array($status, ['Waiting HSE', 'Scheduled', 'Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 09:30</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Siti
-                                        (Corsec)</small>
-                                @endif
                             </div>
 
-                            <!-- Step 3: HSE Review -->
+                            <!-- Step 3: Review HSE -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Scheduled', 'Active', 'Expired']) ? 'bg-success' : ($status == 'Waiting HSE' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['scheduled', 'active', 'expired', 'finished']) ? 'bg-success' : ($status == 'waiting_hse' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-search fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Review HSE</span>
-                                @if(in_array($status, ['Scheduled', 'Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 13:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Admin
-                                        HSE</small>
-                                @endif
                             </div>
 
                             <!-- Step 4: Safety Induction -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : ($status == 'Scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['active', 'expired', 'finished']) ? 'bg-success' : ($status == 'scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-person-badge fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Safety Induction</span>
-                                @if(in_array($status, ['Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">15 Jan 09:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Admin
-                                        HSE</small>
+                                <span class="d-block mt-2 fw-bold small">Safety Induction<br>& Cetak ID</span>
+                                @if(in_array($status, ['active', 'expired', 'finished']))
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">Wait Check</small>
+                                @endif
+                                @if($status == 'scheduled')
+                                    <small class="d-block text-warning fw-bold" style="font-size: 0.7rem;">Izin Masuk
+                                        Aktif</small>
                                 @endif
                             </div>
 
-                            <!-- Step 5: Active (Stays Green if Expired) -->
+                            <!-- Step 5: Aktif (Tetap Hijau jika Kedaluwarsa) -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['active', 'expired', 'finished']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-flag fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Izin Aktif</span>
-                                @if(in_array($status, ['Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">15 Jan 10:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Valid by
-                                        System</small>
-                                @endif
+                                <span class="d-block mt-2 fw-bold small">Full Access</span>
                             </div>
 
-                            <!-- Step 6: Expired (New Stage) -->
+                            <!-- Step 6: Kedaluwarsa (Tahap Baru) -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ $status == 'Expired' ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['expired', 'finished']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-check-circle-fill fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Izin Berakhir</span>
-                                @if($status == 'Expired')
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">20 Jan 17:00</small>
+                                <span class="d-block mt-2 fw-bold small">Selesai/Expired</span>
+                                @if($status == 'expired')
+                                    <small class="text-muted d-block"
+                                        style="font-size: 0.75rem;">{{ $wp->end_date->format('d M Y') }}</small>
                                     <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Selesai</small>
                                 @endif
                             </div>
@@ -201,7 +184,8 @@
             </div>
 
 
-            <form>
+            <form id="hseActionForm" method="POST">
+                @csrf
                 <div class="row">
                     <!-- Left Column: Data Head Work Permit -->
                     <div class="col-md-7">
@@ -214,43 +198,31 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Nomer Work Permit (User)</label>
-                                        <input type="text" class="form-control" value="WP-2024-001" disabled>
+                                        <input type="text" class="form-control" value="{{ $wp->doc_no }}" disabled>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label text-primary fw-bold">No. Izin Kerja Berbahaya
                                             (HSE)</label>
-                                        @php
-                                            // Generate unique sub-ID based on type
-                                            $shortCode = match ($type) {
-                                                'Kerja Panas' => 'KP',
-                                                'Bekerja di Ketinggian' => 'K',
-                                                'Pekerjaan Listrik' => 'L',
-                                                'Memasuki Ruang Terbatas' => 'RT',
-                                                default => 'GEN'
-                                            };
-                                            $ikbNumber = "WP-2024-001/" . $shortCode . "/01";
-                                        @endphp
                                         <input type="text" class="form-control fw-bold text-primary border-primary"
-                                            value="{{ $ikbNumber }}" disabled>
+                                            value="{{ $wp->doc_no }}/HSE/01" disabled>
                                     </div>
                                 </div>
 
                                 <!-- Nama Vendor -->
                                 <div class="mb-3">
                                     <label class="form-label">Nama Vendor/Instansi/Universitas</label>
-                                    <input type="text" class="form-control" name="nama_vendor" value="{{ $vendor }}"
-                                        disabled>
+                                    <input type="text" class="form-control" value="{{ $wp->vendor->name }}" disabled>
                                 </div>
 
                                 <!-- Area & STA -->
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Area</label>
-                                        <input type="text" class="form-control" value="{{ $area }}" disabled>
+                                        <input type="text" class="form-control" value="{{ $wp->location }}" disabled>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">STA</label>
-                                        <input type="text" class="form-control" value="{{ $sta }}" disabled>
+                                        <input type="text" class="form-control" value="Jasa Rutin" disabled>
                                     </div>
                                 </div>
 
@@ -270,7 +242,7 @@
                                 <!-- Uraian Pekerjaan -->
                                 <div class="mb-3">
                                     <label class="form-label">Uraian Pekerjaan</label>
-                                    <textarea class="form-control" rows="4" disabled>{{ $uraian }}</textarea>
+                                    <textarea class="form-control" rows="4" disabled>{{ $wp->work_description }}</textarea>
                                 </div>
 
                                 <!-- Waktu Mulai & Akhir -->
@@ -278,15 +250,17 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Waktu Mulai</label>
                                         <div class="input-group">
-                                            <input type="date" class="form-control" value="{{ $startDate }}" disabled>
-                                            <input type="time" class="form-control" value="{{ $startTime }}" disabled>
+                                            <input type="date" class="form-control"
+                                                value="{{ $wp->start_date->format('Y-m-d') }}" disabled>
+                                            <input type="time" class="form-control" value="08:00" disabled>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label">Waktu Berakhir</label>
                                         <div class="input-group">
-                                            <input type="date" class="form-control" value="{{ $endDate }}" disabled>
-                                            <input type="time" class="form-control" value="{{ $endTime }}" disabled>
+                                            <input type="date" class="form-control"
+                                                value="{{ $wp->end_date->format('Y-m-d') }}" disabled>
+                                            <input type="time" class="form-control" value="17:00" disabled>
                                         </div>
                                     </div>
                                 </div>
@@ -298,7 +272,7 @@
 
                                 <div class="row">
                                     @php
-                                        // Define specific requirements based on Job Type
+                                        // Tentukan persyaratan khusus berdasarkan Jenis Pekerjaan
                                         $requirements = [
                                             'Kerja Panas' => [
                                                 'apd' => ['Safety Helmet', 'Safety Shoes', 'Kaca Mata Safety', 'Kedok Las', 'Sarung Tangan Kulit', 'Baju Tahan Panas'],
@@ -374,9 +348,9 @@
                         <div class="card card-primary card-outline mb-4">
                             <div class="card-header">
                                 <h3 class="card-title fw-bold">
-                                    @if($status == 'Waiting HSE')
+                                    @if($status == 'waiting_hse')
                                         <i class="bi bi-calendar-plus me-1"></i> Penjadwalan Safety Induction
-                                    @elseif($status == 'Scheduled')
+                                    @elseif($status == 'scheduled')
                                         <i class="bi bi-file-earmark-check me-1"></i> Validasi Safety Induction
                                     @else
                                         <i class="bi bi-info-circle me-1"></i> Data Safety Induction
@@ -384,12 +358,15 @@
                                 </h3>
                             </div>
                             <div class="card-body">
-                                @if($status == 'Waiting HSE')
+                                <form id="hseActionForm" method="POST">
+                                    @csrf
+                                @if($status == 'waiting_hse')
                                     <!-- STEP 1: Scheduling -->
                                     <div class="mb-3">
                                         <label class="form-label">Tentukan Jadwal Induction <span
                                                 class="text-danger">*</span></label>
-                                        <input type="datetime-local" class="form-control" id="inputSchedule">
+                                        <input type="datetime-local" class="form-control" name="induction_schedule"
+                                            id="inputSchedule">
                                         <small class="text-muted">Pilih tanggal dan jam pelaksanaan safety induction.</small>
                                     </div>
                                     <div class="d-grid gap-2">
@@ -401,17 +378,18 @@
                                         </button>
                                     </div>
 
-                                @elseif($status == 'Scheduled')
+                                @elseif($status == 'scheduled')
                                     <!-- STEP 2: Upload Evidence -->
                                     <div class="mb-3">
                                         <label class="form-label">Jadwal Terpilih</label>
                                         <input type="text" class="form-control bg-light"
-                                            value="{{ date('d M Y, H:i', strtotime($schedule)) }}" readonly>
+                                            value="{{ $wp->induction_schedule ? $wp->induction_schedule->format('d M Y, H:i') : '-' }}"
+                                            readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label for="safetyInductionFile" class="form-label">Upload Bukti Dokumen <span
                                                 class="text-danger">*</span></label>
-                                        <input class="form-control" type="file" id="safetyInductionFile"
+                                        <input class="form-control" type="file" id="safetyInductionFile" name="evidence"
                                             accept=".pdf,.jpg,.jpeg,.png">
                                         <small class="text-muted">Formulir kehadiran atau sertifikat induction.</small>
                                     </div>
@@ -426,19 +404,26 @@
                                     <div class="mb-3">
                                         <label class="form-label">Jadwal Pelaksanaan</label>
                                         <input type="text" class="form-control bg-light"
-                                            value="{{ $schedule ? date('d M Y, H:i', strtotime($schedule)) : '14 Jan 2024, 09:00' }}"
+                                            value="{{ $wp->induction_schedule ? $wp->induction_schedule->format('d M Y, H:i') : '-' }}"
                                             readonly>
                                     </div>
-                                    <div class="alert alert-light border d-flex align-items-center mb-0">
-                                        <i class="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
-                                        <div>
-                                            <h6 class="fw-bold mb-0">Bukti_Induction.pdf</h6>
-                                            <small class="text-muted">Divalidasi: {{ date('d M Y') }}</small>
+                                    @if($wp->induction_evidence_path)
+                                        <div class="alert alert-light border d-flex align-items-center mb-0">
+                                            <i class="bi bi-file-earmark-pdf fs-3 text-danger me-3"></i>
+                                            <div>
+                                                <h6 class="fw-bold mb-0">Bukti_Induction.pdf</h6>
+                                                <small class="text-muted">Divalidasi: {{ $wp->updated_at->format('d M Y') }}</small>
+                                            </div>
+                                            <a href="#" class="btn btn-sm btn-outline-primary ms-auto"><i
+                                                    class="bi bi-download"></i></a>
                                         </div>
-                                        <a href="#" class="btn btn-sm btn-outline-primary ms-auto"><i
-                                                class="bi bi-download"></i></a>
-                                    </div>
+                                    @else
+                                        <div class="alert alert-warning">
+                                            <small>Belum ada bukti yang diupload.</small>
+                                        </div>
+                                    @endif
                                 @endif
+                                </form>
                             </div>
                         </div>
 
@@ -495,37 +480,21 @@
                                             <p class="mb-1 small">Diajukan oleh Corsec dan menunggu review HSE.</p>
                                         </div>
                                     @else
-                                        <!-- Mockup Logs for Active/History View -->
+                                        <!-- Mockup Log untuk Tampilan Aktif/Riwayat -->
                                         <div class="list-group-item">
                                             <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1 fw-bold text-danger">Dibatalkan</h6>
-                                                <small class="text-muted">17 Jan 2024 09:00</small>
+                                                <h6 class="mb-1 fw-bold text-primary">Status Terkini:
+                                                    {{ ucfirst(str_replace('_', ' ', $wp->status)) }}</h6>
+                                                <small class="text-muted">{{ $wp->updated_at->format('d M H:i') }}</small>
                                             </div>
-                                            <p class="mb-1 small">Work Permit dibatalkan secara manual.</p>
-                                            <small class="text-muted">Oleh: Admin HSE</small>
+                                            <p class="mb-1 small">Update status terakhir.</p>
                                         </div>
                                         <div class="list-group-item">
                                             <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1 fw-bold text-warning">Perpanjangan Izin</h6>
-                                                <small class="text-muted">16 Jan 2024 16:30</small>
+                                                <h6 class="mb-1 fw-bold text-secondary">Pengajuan Dibuat</h6>
+                                                <small class="text-muted">{{ $wp->created_at->format('d M H:i') }}</small>
                                             </div>
-                                            <p class="mb-1 small">Izin diperpanjang hingga 18 Jan 2024.</p>
-                                            <small class="text-muted">Oleh: Super Admin</small>
-                                        </div>
-                                        <div class="list-group-item">
-                                            <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1 fw-bold text-success">Disetujui (ACC)</h6>
-                                                <small class="text-muted">14 Jan 2024 08:30</small>
-                                            </div>
-                                            <p class="mb-1 small">Izin Kerja disetujui setelah review Safety Induction.</p>
-                                            <small class="text-muted">Oleh: Budi (HSE Officer)</small>
-                                        </div>
-                                        <div class="list-group-item">
-                                            <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1 fw-bold text-primary">Pengajuan Masuk</h6>
-                                                <small class="text-muted">14 Jan 2024 08:00</small>
-                                            </div>
-                                            <p class="mb-1 small">Work Permit diteruskan dari Corsec.</p>
+                                            <p class="mb-1 small">Diajukan oleh {{ $wp->vendor->name ?? 'User' }}.</p>
                                         </div>
                                     @endif
                                 </div>
@@ -569,9 +538,9 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Canvas Logic
+        // Logika Canvas
         let canvas, ctx, isDrawing = false;
-        let activeAction = ''; // 'schedule' or 'finish'
+        let activeAction = ''; // 'schedule' atau 'finish'
 
         function initCanvas() {
             canvas = document.getElementById('signatureCanvas');
@@ -581,13 +550,13 @@
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#000';
 
-            // Events
+            // Event
             canvas.addEventListener('mousedown', startDrawing);
             canvas.addEventListener('mousemove', draw);
             canvas.addEventListener('mouseup', stopDrawing);
             canvas.addEventListener('mouseout', stopDrawing);
 
-            // Touch
+            // Sentuhan (Touch)
             canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
@@ -611,12 +580,15 @@
             ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
         }
         function stopDrawing() { isDrawing = false; ctx.beginPath(); }
+        // Helper: Clear Canvas
         function clearCanvas() { if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
+        // --- HSE ACTIONS ---
+
         function approveAndSchedule() {
-            // Validate Schedule Input
+            // Validasi Input Jadwal
             const scheduleInput = document.getElementById('inputSchedule');
-            if (scheduleInput && !scheduleInput.value) {
+            if (!scheduleInput || !scheduleInput.value) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Jadwal Belum Dipilih',
@@ -625,12 +597,25 @@
                 return;
             }
 
-            activeAction = 'schedule';
-            openSignatureModal('Konfirmasi Penjadwalan');
+            // Konfirmasi lalu Submit
+            Swal.fire({
+                title: 'Setujui & Jadwalkan?',
+                text: "User akan mendapat notifikasi jadwal induction.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                confirmButtonText: 'Ya, Jadwalkan'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('hseActionForm');
+                    form.action = "{{ route('hse.work_permit.schedule', $wp->id) }}";
+                    form.submit();
+                }
+            });
         }
 
         function finishInduction() {
-            // Validate File Upload
+            // Validasi Upload File
             const fileInput = document.getElementById('safetyInductionFile');
             if (fileInput && fileInput.files.length === 0) {
                 Swal.fire({
@@ -641,45 +626,32 @@
                 return;
             }
 
-            activeAction = 'finish';
-            openSignatureModal('Validasi Akhir');
+            Swal.fire({
+                title: 'Validasi Selesai?',
+                text: "Work Permit akan diaktifkan.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                confirmButtonText: 'Ya, Aktifkan'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById('hseActionForm');
+                    form.action = "{{ route('hse.work_permit.validate', $wp->id) }}";
+                    form.enctype = "multipart/form-data"; // Penting untuk upload file
+                    form.submit();
+                }
+            });
         }
-
-        function openSignatureModal(title) {
-            document.getElementById('sigModalTitle').innerText = title;
-            const modal = new bootstrap.Modal(document.getElementById('signatureModal'));
-            modal.show();
-            setTimeout(initCanvas, 500);
-        }
-
-        document.getElementById('btnClearSignature').addEventListener('click', clearCanvas);
-        document.getElementById('btnConfirmSignature').addEventListener('click', function () {
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('signatureModal'));
-            modal.hide();
-
-            if (activeAction === 'schedule') {
-                Swal.fire('Berhasil!', 'Jadwal Safety Induction telah ditetapkan & Divalidasi.', 'success').then(() => {
-                    window.location.href = "{{ route('hse.work-permit-hse') }}";
-                });
-            } else if (activeAction === 'finish') {
-                Swal.fire('Selesai!', 'Safety Induction tervalidasi. Izin Kerja AKTIF.', 'success').then(() => {
-                    window.location.href = "{{ route('hse.work_permit_history') }}";
-                });
-            }
-        });
 
         function rejectWP() {
             Swal.fire({
                 title: 'Tolak Izin Kerja?',
                 text: "Berikan alasan penolakan:",
                 input: 'textarea',
-                icon: 'warning',
+                icon: 'error',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Tolak',
-                cancelButtonText: 'Batal',
                 preConfirm: (reason) => {
                     if (!reason) {
                         Swal.showValidationMessage('Alasan penolakan wajib diisi!')
@@ -688,9 +660,17 @@
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire('Ditolak!', 'Work Permit telah ditolak.', 'error').then(() => {
-                        window.location.href = "{{ route('hse.work-permit-hse') }}";
-                    });
+                    const form = document.getElementById('hseActionForm');
+
+                    // Tambahkan input hidden untuk alasan
+                    const reasonInput = document.createElement('input');
+                    reasonInput.type = 'hidden';
+                    reasonInput.name = 'reject_reason';
+                    reasonInput.value = result.value;
+                    form.appendChild(reasonInput);
+
+                    form.action = "{{ route('hse.work_permit.reject', $wp->id) }}";
+                    form.submit();
                 }
             });
         }

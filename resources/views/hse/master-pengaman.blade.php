@@ -57,32 +57,22 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                $pengamans = [
-                                    'Isolasi power supply',
-                                    'Hydr. system off',
-                                    'Bekas gas beracun',
-                                    'Tag out',
-                                    'Log out',
-                                    'APAR',
-                                    'Hydrant',
-                                    'Safety Line',
-                                    'Lampu penerangan DC 50 Volt'
-                                ];
-                            @endphp
-
-                            @foreach($pengamans as $index => $pengaman)
+                            @forelse($pengamans as $index => $pengaman)
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $pengaman }}</td>
+                                    <td class="fw-bold">{{ $pengaman->name }}</td>
                                     <td class="text-center">
                                         <button class="btn btn-warning btn-sm text-white btn-edit-pengaman"
-                                            data-name="{{ $pengaman }}" title="Edit">
+                                            data-id="{{ $pengaman->id }}" data-name="{{ $pengaman->name }}" title="Edit">
                                             <i class="bi bi-pencil-fill"></i>
                                         </button>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center">Belum ada data pengaman.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -100,11 +90,14 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formPengaman">
+                    <form id="formPengaman" action="{{ route('hse.master-pengaman.store') }}" method="POST">
+                        @csrf
+                        <div id="method-container"></div>
+                        <input type="hidden" name="type" value="safety_device">
                         <div class="mb-3">
                             <label for="inputNamaPengaman" class="form-label">Nama Pengaman</label>
-                            <input type="text" class="form-control" id="inputNamaPengaman" placeholder="Contoh: APAR"
-                                required>
+                            <input type="text" class="form-control" id="inputNamaPengaman" name="name"
+                                placeholder="Contoh: APAR" required>
                         </div>
                     </form>
                 </div>
@@ -137,14 +130,7 @@
                 "autoWidth": false,
                 "pagingType": "simple_numbers",
                 "pageLength": 10,
-                "language": {
-                    "search": "Cari:",
-                    "lengthMenu": "Tampilkan _MENU_ data",
-                    "zeroRecords": "Data tidak ditemukan",
-                    "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                    "paginate": { "previous": "Previous", "next": "Next" }
-                },
-                "columnDefs": [{ "orderable": false, "targets": 2 }]
+                // ... rest of config if needed
             });
 
             // Modal Logic
@@ -153,31 +139,41 @@
             const modalLabel = document.getElementById('modalPengamanLabel');
             const inputNama = document.getElementById('inputNamaPengaman');
             let isEditMode = false;
+            const formPengaman = document.getElementById('formPengaman');
+            const methodContainer = document.getElementById('method-container');
+
+            // Base Routes
+            const storeRoute = "{{ route('hse.master-pengaman.store') }}";
+            const updateRouteTemplate = "{{ route('hse.master-pengaman.update', ':id') }}";
 
             // Handle Add Button
             $('#btnTambahPengaman').click(function () {
                 isEditMode = false;
                 modalLabel.innerText = 'Tambah Pengaman Baru';
-                // Reset Color to Primary
                 $('.modal-header').removeClass('bg-warning').addClass('bg-primary');
-                // Reset Close Button to white
                 $('.btn-close').addClass('btn-close-white');
 
                 inputNama.value = '';
+                formPengaman.action = storeRoute;
+                methodContainer.innerHTML = '';
+
                 modal.show();
             });
 
-            // Handle Edit Button (Event Delegation for Dynamic Tables)
-            $('#tableMasterPengaman').on('click', '.btn-edit-pengaman', function () {
+            // Handle Edit Button
+            $(document).on('click', '.btn-edit-pengaman', function () {
                 isEditMode = true;
+                const id = $(this).data('id');
                 const currentName = $(this).data('name');
+
                 modalLabel.innerText = 'Edit Data Pengaman';
-                // Set Color to Warning
                 $('.modal-header').removeClass('bg-primary').addClass('bg-warning');
-                // Reset Close Button to default
                 $('.btn-close').removeClass('btn-close-white');
 
                 inputNama.value = currentName;
+                formPengaman.action = updateRouteTemplate.replace(':id', id);
+                methodContainer.innerHTML = '<input type="hidden" name="_method" value="PUT">';
+
                 modal.show();
             });
 
@@ -186,11 +182,7 @@
                 const nameCheck = inputNama.value.trim();
 
                 if (!nameCheck) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal',
-                        text: 'Nama Pengaman tidak boleh kosong!',
-                    });
+                    Swal.fire('Gagal', 'Nama Pengaman tidak boleh kosong!', 'error');
                     return;
                 }
 
@@ -206,18 +198,7 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Simulate Success
-                        modal.hide();
-                        Swal.fire({
-                            title: 'Berhasil!',
-                            text: isEditMode ? 'Data Pengaman berhasil diperbarui.' : 'Data Pengaman berhasil ditambahkan.',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // In real app, reload or update table here
-                            // location.reload();
-                        });
+                        $('#formPengaman').submit();
                     }
                 });
             });

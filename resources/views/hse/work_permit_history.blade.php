@@ -60,78 +60,55 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                // Data Riwayat Dummy
-                                $history = [
-                                    [
-                                        'id' => 201,
-                                        'doc_no' => 'WP-2023-099',
-                                        'applicant' => 'Joko Widodo',
-                                        'company' => 'PT. Adhi Karya',
-                                        'safety_type' => 'Pekerjaan Listrik',
-                                        'date' => '2023-12-25',
-                                        'status' => 'Active'
-                                    ],
-                                    [
-                                        'id' => 202,
-                                        'doc_no' => 'WP-2023-098',
-                                        'applicant' => 'Susilo Bambang',
-                                        'company' => 'PT. Waskita',
-                                        'safety_type' => 'Kerja Panas',
-                                        'date' => '2023-12-24',
-                                        'status' => 'Inactive'
-                                    ],
-                                    [
-                                        'id' => 203,
-                                        'doc_no' => 'WP-2023-098',
-                                        'applicant' => 'Susilo Bambang',
-                                        'company' => 'PT. Waskita',
-                                        'safety_type' => 'Bekerja di Ketinggian',
-                                        'date' => '2023-12-24',
-                                        'status' => 'Active'
-                                    ]
-                                ];
-                            @endphp
-
-                            @foreach($history as $index => $item)
+                        <tbody>
+                            @forelse($historyWps as $index => $wp)
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $item['doc_no'] }}</td>
+                                    <td class="fw-bold">{{ $wp->doc_no }}</td>
                                     <td class="fw-bold text-primary">
                                         @php
-                                            $code = match ($item['safety_type']) {
+                                            $code = match ($wp->work_type) {
                                                 'Kerja Panas' => 'KP',
                                                 'Bekerja di Ketinggian' => 'K',
                                                 'Pekerjaan Listrik' => 'L',
                                                 'Memasuki Ruang Terbatas' => 'RT',
                                                 default => 'GEN'
                                             };
-                                            echo $item['doc_no'] . '/' . $code . '/01';
+                                            echo $wp->doc_no . '/' . $code . '/01';
                                         @endphp
                                     </td>
-                                    <td>{{ $item['applicant'] }}</td>
-                                    <td>{{ $item['company'] }}</td>
+                                    <td>{{ $wp->vendor->pic_name ?? 'User' }}</td>
+                                    <td>{{ $wp->vendor->name }}</td>
                                     <td>
                                         <span class="badge bg-secondary">
-                                            <i class="bi bi-shield-check me-1"></i> {{ $item['safety_type'] }}
+                                            <i class="bi bi-shield-check me-1"></i> {{ $wp->work_type }}
                                         </span>
                                     </td>
-                                    <td>{{ $item['date'] }}</td>
+                                    <td>{{ $wp->updated_at->format('Y-m-d') }}</td>
                                     <td class="text-center">
-                                        @if($item['status'] == 'Active')
+                                        @if($wp->status == 'active')
                                             <span class="badge bg-success">Active</span>
+                                        @elseif($wp->status == 'expired')
+                                            <span class="badge bg-secondary">Expired</span>
+                                        @elseif($wp->status == 'rejected')
+                                            <span class="badge bg-danger">Rejected</span>
                                         @else
-                                            <span class="badge bg-danger">Inactive</span>
+                                            <span class="badge bg-secondary">{{ ucfirst($wp->status) }}</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('hse.work_permit.detail', ['id' => $item['id'], 'type' => $item['safety_type'], 'status' => $item['status']]) }}"
+                                        <a href="{{ route('hse.work_permit.detail', $wp->id) }}"
                                             class="btn btn-info btn-sm text-white" title="Lihat Detail">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="9" class="text-center">Belum ada riwayat Work Permit.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
                         </tbody>
                     </table>
                 </div>

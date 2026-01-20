@@ -63,80 +63,47 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php
-                                $vendors = [
-                                    'PT. Teknologi Maju',
-                                    'PT. Baja Steel',
-                                    'CV. Maju Jaya',
-                                    'PT. Cilegon Eng',
-                                    'CV. Baratech',
-                                    'PT. Global Supply',
-                                    'PT. Sarana Utama',
-                                    'CV. Teknik Mandiri',
-                                    'PT. Delta Safety',
-                                    'CV. Berkah',
-                                    'PT. Inti Karya',
-                                    'PT. Pilar Beton',
-                                    'CV. Elektronika',
-                                    'PT. Mega Logistik',
-                                    'CV. Sumber Makmur'
-                                ];
-                                $staTypes = ['Jasa Murni', 'Jasa Rutin', 'KP/Magang'];
-                                $areas = ['Area Pabrik 1', 'Area Pabrik 2', 'Area Kantor Pusat', 'Area Gudang', 'Area Dermaga'];
-                                // Only Active and Expired for History
-                                $statuses = ['Active', 'Expired'];
-
-                                $workPermits = [];
-                                for ($i = 0; $i < 30; $i++) {
-                                    $workPermits[] = [
-                                        'no_wp' => 'WP-2026-' . str_pad($i + 1, 3, '0', STR_PAD_LEFT),
-                                        'vendor' => $vendors[array_rand($vendors)],
-                                        'sta' => $staTypes[array_rand($staTypes)],
-                                        'area' => $areas[array_rand($areas)],
-                                        'start_date' => date('d/m/Y', strtotime('-' . rand(10, 50) . ' days')),
-                                        'end_date' => date('d/m/Y', strtotime('+' . rand(5, 30) . ' days')),
-                                        'workers_count' => rand(5, 50),
-                                        'status' => $statuses[array_rand($statuses)],
-                                    ];
-                                }
-                            @endphp
-
-                            @foreach($workPermits as $index => $wp)
+                            @forelse($historyWps as $index => $wp)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $wp['no_wp'] }}</td>
-                                    <td>{{ $wp['vendor'] }}</td>
+                                    <td class="fw-bold">{{ $wp->doc_no }}</td>
+                                    <td>{{ $wp->vendor->name ?? 'User' }}</td>
                                     <td>
-                                        @if($wp['sta'] == 'Jasa Murni')
-                                            <span class="badge bg-info">{{ $wp['sta'] }}</span>
-                                        @elseif($wp['sta'] == 'Jasa Rutin')
-                                            <span class="badge bg-primary">{{ $wp['sta'] }}</span>
-                                        @else
-                                            <span class="badge bg-warning text-dark">{{ $wp['sta'] }}</span>
-                                        @endif
+                                        <span class="badge bg-primary">Jasa Rutin</span>
                                     </td>
-                                    <td>{{ $wp['area'] }}</td>
-                                    <td>{{ $wp['start_date'] }}</td>
-                                    <td>{{ $wp['end_date'] }}</td>
-                                    <td class="text-center">{{ $wp['workers_count'] }}</td>
+                                    <td>{{ $wp->location }}</td>
+                                    <td>{{ $wp->start_date->format('d/m/Y') }}</td>
+                                    <td>{{ $wp->end_date->format('d/m/Y') }}</td>
+                                    <td class="text-center">{{ $wp->employees->count() }}</td>
                                     <td class="text-center">
-                                        @if($wp['status'] == 'Active')
-                                            <span class="badge bg-success">Active</span>
-                                        @else
-                                            <span class="badge bg-danger">Expired</span>
-                                        @endif
+                                        @php
+                                            $badgeClass = match ($wp->status) {
+                                                'active' => 'bg-success',
+                                                'expired' => 'bg-danger',
+                                                'rejected' => 'bg-danger',
+                                                'finished' => 'bg-secondary',
+                                                default => 'bg-secondary'
+                                            };
+                                        @endphp
+                                        <span class="badge {{ $badgeClass }}">
+                                            {{ ucfirst(str_replace('_', ' ', $wp->status)) }}
+                                        </span>
                                     </td>
                                     <td class="text-center">
                                         <!-- Action Buttons Group -->
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('user.work-permit.detail', ['id' => $index + 100]) }}?status={{ $wp['status'] }}"
-                                                class="btn btn-primary" title="Detail">
-                                                <i class="bi bi-eye"></i>
+                                            <a href="{{ route('user.work-permit.detail', $wp->id) }}" class="btn btn-primary"
+                                                title="Detail">
+                                                <i class="bi bi-eye"></i> Detail
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="10" class="text-center">Belum ada riwayat work permit.</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
