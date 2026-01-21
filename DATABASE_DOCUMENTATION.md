@@ -1,7 +1,57 @@
 # Database Documentation: WP001
 Generated on: 2026-01-21 04:03:19
 
-## Table: `CONTRACT`
+## Analisis & Pemetaan Tabel (System Overview)
+
+Berdasarkan struktur dan sampel data yang ditemukan, berikut adalah analisis fungsi dari tabel-tabel yang ada di database `WP001`. Database ini sepertinya merupakan database ERP/Operasional yang mencakup modul Penjualan, Pengadaan, dan Manajemen User.
+
+### 1. Modul Komersial & Penjualan (Sales)
+Tabel-tabel ini menangani proses bisnis penjualan dan distribusi barang.
+*   **`CONTRACT`**:
+    *   **Fungsi**: Menyimpan data kontrak penjualan dengan customer.
+    *   **Kolom Penting**: `CONTRACTNO` (Nomor Kontrak), `CUSTOMER_NAME` (Pelanggan), `TOTAL_PRICE` (Nilai Kontrak), `STATUS` (Status Kontrak), `FILE_NAME` (Lampiran PDF).
+*   **`DELIVERY_ORDER` (DO)**:
+    *   **Fungsi**: Menyimpan surat jalan atau perintah pengiriman barang ke customer, biasanya mengacu pada kontrak tertentu.
+    *   **Kolom Penting**: `DONO` (No. DO), `CONTRACTNO` (Reff Kontrak), `EXP_DATE` (Tgl Expired), `CUSTOMER_NAME`.
+
+### 2. Modul Pengadaan & Logistik (Procurement)
+Tabel-tabel ini menangani permintaan pembelian barang/jasa dan kontrak pembelian ke vendor.
+*   **`PR` (Purchase Request)**:
+    *   **Fungsi**: Menyimpan data permintaan pembelian internal.
+    *   **Kolom Penting**: `PRNO` (No PR), `ITEM_NAME` (Nama Barang), `ESTIMASI_COST`, `COSTCENTER_NAME` (Departemen Peminta).
+*   **`PC` (Purchase Contract / Procurement Confirmation)**:
+    *   **Fungsi**: Kemungkinan menyimpan data realisasi pembelian atau kontrak ke Vendor (Supplier).
+    *   **Kolom Penting**: `PCNO`, `PRNO` (Reff PR), `VENDOR_NAME`, `PRICE_PC` (Harga Deal).
+
+### 3. Modul Manajemen User & Sistem (System Core)
+Tabel-tabel dengan prefix `sm_` (System Manager?) menangani otentikasi dan hak akses.
+*   **`sm_UserID`**: Tabel utama user/pengguna (username, password, email, ROLE/GROUP).
+*   **`sm_UserFunction`**: Mengatur hak akses user terhadap fungsi tertentu (FunctionID).
+*   **`sm_UserAdmin`**: Tabel khusus untuk admin.
+*   **`sm_cbFunction` / `sm_cmdButton`**: Konfigurasi teknis untuk tombol/fungsi aplikasi (kemungkinan konfigurasi menu dinamis).
+*   **`sm_mailserver`**: Konfigurasi SMTP untuk pengiriman email notifikasi.
+
+### 4. Modul Approval (Persetujuan)
+*   **`HISTORY_APPROVE`**: Mencatat riwayat persetujuan dokumen (siapa yang approve, kapan, status `A`=Approved?). Terhubung via `CONTRACTNO` atau nomor dokumen lain.
+
+### 5. Master Data Wilayah (Regional)
+Tabel referensi standar untuk alamat.
+*   **`DATA_PROVINSI`, `DATA_KOTA`, `DATA_KEC`, `DATA_KEL`**: Master data hirarki wilayah Indonesia.
+
+---
+
+### ⚠️ GAP ANALYSIS: Kebutuhan Modul Work Permit & HSE
+Untuk fitur **Master Data SI (Safety Induction)** yang sedang dikerjakan, **BELUM ADA** tabel yang relevan di database ini.
+
+**Tabel yang PERLU DIBUAT (Missing Tables):**
+1.  **`m_apd`**: Master Alat Pelindung Diri (Helmet, Sepatu Safety, dll).
+2.  **`m_pengaman`**: Master Alat Pengaman (APAR, Safety Line, dll).
+3.  **`m_ikb`**: Master Identifikasi Bahaya & Kerja Berbahaya (Kerja Panas, Ketinggian, dll).
+
+Saat ini, data tersebut masih **hardcoded** di dalam View Laravel (`master_data_si.blade.php`), sehingga belum bisa Create/Update/Delete secara dinamis ke database.
+
+---
+
 ### Schema
 | Column | Type | Length | Nullable |
 |---|---|---|---|
