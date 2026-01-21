@@ -61,115 +61,78 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @php $counter = 1; @endphp
-                            @forelse($waitingWps as $wp)
-                                <tr>
-                                    <td class="text-center">{{ $counter++ }}</td>
-                                    <td class="fw-bold">{{ $wp->doc_no }}</td>
-                                    <td class="fw-bold text-primary">
-                                        @php
-                                            $code = match ($wp->work_type) {
-                                                'Kerja Panas' => 'KP',
-                                                'Bekerja di Ketinggian' => 'K',
-                                                'Pekerjaan Listrik' => 'L',
-                                                'Memasuki Ruang Terbatas' => 'RT',
-                                                default => 'GEN'
-                                            };
-                                            echo $wp->doc_no . '/' . $code . '/01';
-                                        @endphp
-                                    </td>
-                                    <td>{{ $wp->vendor->pic_name ?? 'User' }}</td>
-                                    <td>{{ $wp->vendor->name }}</td>
-                                    <td>
-                                        <span class="badge bg-info text-dark">
-                                            <i class="bi bi-exclamation-triangle me-1"></i> {{ $wp->work_type }}
-                                        </span>
-                                    </td>
-                                    <td>{{ $wp->updated_at->format('d M Y') }}</td>
-                                    <td class="text-center">
-                                        <span class="badge bg-warning text-dark">Menunggu Review</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ route('hse.work_permit.detail', $wp->id) }}" class="btn btn-primary btn-sm"
-                                            title="Lihat Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">Tidak ada Work Permit yang menunggu review.</td>
-                                </tr>
-                            @endforelse
+                            @php
+                                // Simulasi Data Dummy
+                                $wps = [
+                                    [
+                                        'id' => 101,
+                                        'doc_no' => 'WP-2024-001',
+                                        'applicant' => 'Budi Santoso',
+                                        'company' => 'PT. Maju Jaya',
+                                        // WP ini memiliki BEBERAPA jenis induksi
+                                        'safety_types' => ['Kerja Panas', 'Bekerja di Ketinggian'],
+                                        'date' => '2024-01-14',
+                                        'status' => 'Waiting HSE'
+                                    ],
+                                    [
+                                        'id' => 102,
+                                        'doc_no' => 'WP-2024-002',
+                                        'applicant' => 'Siti Aminah',
+                                        'company' => 'PT. Baja Indonesia',
+                                        'safety_types' => ['Pekerjaan Listrik'],
+                                        'date' => '2024-01-15',
+                                        'status' => 'Waiting HSE'
+                                    ],
+                                ];
+
+                                $counter = 1;
+                            @endphp
+
+                            @foreach($wps as $wp)
+                                @if($wp['status'] == 'Waiting HSE')
+                                    @foreach($wp['safety_types'] as $type)
+                                        <tr>
+                                            <td class="text-center">{{ $counter++ }}</td>
+                                            <td class="fw-bold">{{ $wp['doc_no'] }}</td>
+                                            <td class="fw-bold text-primary">
+                                                @php
+                                                    $code = match ($type) {
+                                                        'Kerja Panas' => 'KP',
+                                                        'Bekerja di Ketinggian' => 'K',
+                                                        'Pekerjaan Listrik' => 'L',
+                                                        'Memasuki Ruang Terbatas' => 'RT',
+                                                        default => 'GEN'
+                                                    };
+                                                    echo $wp['doc_no'] . '/' . $code . '/01';
+                                                @endphp
+                                            </td>
+                                            <td>{{ $wp['applicant'] }}</td>
+                                            <td>{{ $wp['company'] }}</td>
+                                            <td>
+                                                <span class="badge bg-info text-dark">
+                                                    <i class="bi bi-exclamation-triangle me-1"></i> {{ $type }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $wp['date'] }}</td>
+                                            <td class="text-center">
+                                                <span class="badge bg-warning text-dark">Menunggu Review</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{{ route('hse.work_permit.detail', ['id' => $wp['id'], 'type' => $type, 'status' => 'Waiting HSE']) }}"
+                                                    class="btn btn-primary btn-sm" title="Lihat Detail">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Tabel Jadwal Safety Induction (New) -->
-            <div class="card card-outline card-success shadow-sm mt-4">
-                <div class="card-header">
-                    <h3 class="card-title">Jadwal Safety Induction</h3>
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
-                            <i class="bi bi-dash-lg"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table id="tableScheduleHSE" class="table table-bordered table-hover align-middle w-100">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px" class="text-center">No</th>
-                                <th>No. Dokumen WP</th>
-                                <th>No. Izin Kerja Berbahaya</th>
-                                <th>Nama Pemohon</th>
-                                <th>Perusahaan</th>
-                                <th>Jenis Pekerjaan</th>
-                                <th>Jadwal Induction</th>
-                                <th class="text-center">Status</th>
-                                <th class="text-center" style="width: 100px;">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php $counterSchedule = 1; @endphp
-                            @forelse($scheduledWps as $wp)
-                                <tr>
-                                    <td class="text-center">{{ $counterSchedule++ }}</td>
-                                    <td class="fw-bold">{{ $wp->doc_no }}</td>
-                                    <td class="fw-bold text-primary">
-                                        {{-- Gunakan logika penomoran yang sama --}}
-                                        {{ $wp->doc_no }}/GEN/01
-                                    </td>
-                                    <td>{{ $wp->vendor->pic_name ?? 'Admin' }}</td>
-                                    <td>{{ $wp->vendor->name }}</td>
-                                    <td>
-                                        <span class="badge bg-secondary">
-                                            {{ $wp->work_type }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {{ $wp->induction_schedule ? $wp->induction_schedule->format('d M Y H:i') : '-' }}
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-success">Siap Induction</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ route('hse.work_permit.detail', $wp->id) }}" class="btn btn-success btn-sm"
-                                            title="Upload Bukti Dokumen">
-                                            <i class="bi bi-upload"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">Tidak ada jadwal induction saat ini.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+
 @endsection
 
         @push('scripts')
@@ -188,7 +151,20 @@
                         "lengthChange": true,
                         "autoWidth": false,
                         "pageLength": 10,
-                        "ordering": false // Nonaktifkan pengurutan agar logika baris terpisah tetap visual
+                        "pagingType": "simple_numbers",
+                        "ordering": true, // Enable ordering as requested
+                        "language": {
+                            "search": "Cari:",
+                            "lengthMenu": "Tampilkan _MENU_ data per halaman",
+                            "zeroRecords": "Data tidak ditemukan",
+                            "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                            "infoEmpty": "Tidak ada data yang tersedia",
+                            "infoFiltered": "(difilter dari _MAX_ total data)",
+                            "paginate": {
+                                "previous": "Previous",
+                                "next": "Next"
+                            }
+                        }
                     });
                 });
             </script>

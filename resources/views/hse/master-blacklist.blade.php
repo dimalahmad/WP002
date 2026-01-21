@@ -115,14 +115,17 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($blacklistedOS as $index => $emp)
+                                    @php
+                                        $osNames = ['Badu Blacklist', 'Siti Masalah', 'Rudi Pelanggar', 'Dewi Sanksi', 'Bambang Kasus', 'Rina Warning', 'Doni Trouble'];
+                                    @endphp
+                                    @foreach($osNames as $index => $name)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td class="fw-bold">{{ $emp->name }}</td>
-                                            <td>{{ $emp->nik }}</td>
-                                            <td>{{ $emp->gender }}</td>
-                                            <td>{{ $emp->updated_at->format('d/m/Y') }}</td>
-                                            <td>Pelanggaran K3 Berat (Data Dinamis)</td>
+                                            <td class="fw-bold">{{ $name }}</td>
+                                            <td>{{ '999999' . str_pad($index + 1, 6, '0', STR_PAD_LEFT) . '9999' }}</td>
+                                            <td>{{ ($index % 2 == 0) ? 'Laki-laki' : 'Perempuan' }}</td>
+                                            <td>{{ date('d/m/Y', strtotime('-' . rand(1, 12) . ' months')) }}</td>
+                                            <td>Pelanggaran K3 Berat</td>
                                             <td class="text-center"><span class="badge bg-danger">Blacklist</span></td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
@@ -132,9 +135,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr><td colspan="8" class="text-center">Tidak ada data blacklist OS.</td></tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -173,25 +174,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($blacklistedVendors as $index => $vendor)
+                                    @php
+                                        $vendors = ['PT. Blacklist Abadi', 'CV. Bermasalah Terus', 'PT. Vendor Sanksi', 'CV. Gagal Kontrak'];
+                                    @endphp
+                                    @foreach($vendors as $index => $vendor)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td class="fw-bold">{{ $vendor->name }}</td>
-                                            <td>{{ $vendor->pic_name ?? 'PIC Unknown' }}</td> // Asumsi pic_name
-                                            <td>{{ $vendor->updated_at->format('d/m/Y') }}</td>
-                                            <td>Kinerja Buruk (Data Dinamis)</td>
+                                            <td class="fw-bold">{{ $vendor }}</td>
+                                            <td>{{ 'PIC ' . ($index + 1) }}</td>
+                                            <td>{{ date('d/m/Y', strtotime('-' . rand(1, 12) . ' months')) }}</td>
+                                            <td>Kinerja Buruk</td>
                                             <td class="text-center"><span class="badge bg-danger">Blacklist</span></td>
                                             <td class="text-center">
                                                 <div class="btn-group btn-group-sm">
-                                                    <a href="{{ route('hse.blacklist-vendor.detail') }}"
+                                                    <a href="{{ route('hse.blacklist-os.detail') }}"
                                                         class="btn btn-info text-white" title="Detail"><i
                                                             class="bi bi-eye"></i></a>
                                                 </div>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr><td colspan="7" class="text-center">Tidak ada vendor blacklist.</td></tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -307,9 +309,29 @@
             });
 
             // Data Sources (Dummy Database)
-            // Data Sources (From Database)
-            var availableOS = {!! json_encode($osAutocomplete) !!};
-            var availableVendors = {!! json_encode($vendorAutocomplete) !!};
+            var availableOS = [
+                "Budi Santoso - 123456",
+                "Andi Wijaya - 654321",
+                "Citra Kirana - 112233",
+                "Dewi Sartika - 998877",
+                "Eko Prasetyo - 554433",
+                "Fajar Nugraha - 223344",
+                "Gita Gutawa - 778899",
+                "Heri Potret - 665544",
+                "Budi Doremi - 991188", // Example similar name
+                "Budiman Sudjatmiko - 110022" // Example similar name
+            ];
+
+            var availableVendors = [
+                "PT. Mencari Sejahtera",
+                "CV. Mundur Jaya",
+                "PT. Krakatau Steel",
+                "CV. Maju Terus",
+                "PT. Konstruksi Utama",
+                "CV. Berkah Abadi",
+                "PT. Sarana Teknik",
+                "CV. Mitra Solusi"
+            ];
 
             // Init Autocomplete for OS
             $("#osInput").autocomplete({

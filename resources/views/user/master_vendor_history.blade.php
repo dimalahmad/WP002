@@ -29,37 +29,80 @@
 
     <div class="app-content">
         <div class="container-fluid">
+            <!-- Tanggal Berakhir & Status Alert -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="alert alert-info shadow-sm d-flex align-items-center justify-content-between px-4 py-3 border-0"
+                        role="alert" style="background-color: #e3f2fd; color: #0d47a1;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-briefcase-fill fs-3 me-3"></i>
+                            <div>
+                                <h5 class="fw-bold mb-0">Status Keaktifan: <span class="badge bg-success ms-2">ACTIVE</span>
+                                </h5>
+                                <small class="mb-0">Kontrak berlaku hingga: <strong>14 Januari 2025</strong></small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block">Sisa Waktu</small>
+                            <span class="fw-bold fs-5">11 Bulan 23 Hari</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Bagian Data Vendor -->
             <div class="row mb-4">
                 <div class="col-md-12">
-                    <div class="card card-success card-outline">
-                        <div class="card-header">
-                            <h3 class="card-title">Data Vendor (Current)</h3>
+                    <div class="card shadow-sm border-0" style="border-radius: 12px; border-top: 4px solid #007bff !important;">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="card-title fw-bold text-dark mb-0"><i class="bi bi-building me-2 text-primary"></i>
+                                Data Vendor (Current)</h5>
                         </div>
-                        <div class="card-body">
-                            <!-- Nama Vendor -->
-                            <div class="mb-3">
-                                <label class="form-label">Nama Vendor</label>
-                                <input type="text" class="form-control" value="PT. Teknologi Indonesia" readonly>
-                            </div>
-
-                            <!-- Alamat Lengkap -->
-                            <div class="mb-3">
-                                <label class="form-label">Alamat Lengkap</label>
-                                <textarea class="form-control" rows="3"
-                                    readonly>Jl. Raya Industri No. 123, Jakarta, Indonesia</textarea>
-                            </div>
-
-                            <!-- Nama PIC & No Handphone -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Nama PIC</label>
-                                    <input type="text" class="form-control" value="Budi Santoso" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">No. Handphone</label>
-                                    <input type="text" class="form-control" value="0812-3456-7890" readonly>
-                                </div>
+                        <div class="card-body pt-0">
+                            <div class="table-responsive">
+                                <table class="table table-borderless align-middle mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase w-25 small"
+                                                style="letter-spacing: 0.5px;">Nama Vendor</td>
+                                            <td class="fw-bold text-dark fs-5">PT. Teknologi Indonesia</td>
+                                        </tr>
+                                        <tr> <!-- Pembatas Halus -->
+                                            <td colspan="2">
+                                                <hr class="my-0 text-muted" style="opacity: 0.1">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small align-top py-3"
+                                                style="letter-spacing: 0.5px;">Alamat Lengkap</td>
+                                            <td class="text-dark py-3">
+                                                Jl. Raya Industri No. 123, Jakarta, Indonesia
+                                            </td>
+                                        </tr>
+                                        <tr> <!-- Pembatas Halus -->
+                                            <td colspan="2">
+                                                <hr class="my-0 text-muted" style="opacity: 0.1">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">Area Layanan</td>
+                                            <td class="text-dark">Maintenance & Konsultan IT</td>
+                                            <!-- Dummy static data to make it look full -->
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">PIC Utama</td>
+                                            <td class="fw-bold text-dark">Budi Santoso</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">Kontak PIC</td>
+                                            <td class="fw-bold text-primary"><i class="bi bi-whatsapp me-1"></i>
+                                                0812-3456-7890</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

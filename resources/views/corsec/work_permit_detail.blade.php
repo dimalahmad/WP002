@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail Work Permit (Corsec)')
+@section('title', 'Detail Work Permit (Corsec View)')
 
 @push('styles')
     <!-- Select2 -->
@@ -29,7 +29,7 @@
             font-size: 1.2rem;
         }
 
-        /* Peningkatan gaya form read-only */
+        /* Peningkatan gaya formulir baca-saja */
         .form-control:disabled,
         .form-control[readonly] {
             background-color: #f8f9fa;
@@ -40,37 +40,59 @@
             background-color: #f8f9fa;
         }
     </style>
+    <!-- CSS DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+    <style>
+        .dataTables_wrapper .dataTables_length select {
+            padding-right: 2rem !important;
+        }
+    </style>
 @endpush
 
 @section('content')
     @php
-        // Tentukan status dari query param (prioritas) atau default ke Waiting Corsec untuk akses langsung
-        $status = request('status') ?? 'Waiting Corsec';
+        // Tentukan status dari parameter query (prioritas) atau logika dummy berdasarkan ID
+        $id = request()->route('id') ?? 1;
+        $reqStatus = request('status') ?? 'Waiting Corsec';
+
+        $status = $reqStatus;
 
         $statusBadgeClass = match ($status) {
             'Waiting Corsec' => 'bg-warning text-dark',
             'Waiting HSE' => 'bg-info text-dark',
             'Active' => 'bg-success',
-            'Expired' => 'bg-danger', // Diubah ke Merah untuk Expired
+            'Scheduled' => 'bg-warning text-dark',
+            'Expired' => 'bg-danger',
             default => 'bg-primary'
         };
 
-        // Data Dummy
+        // Dummy Data - SIMULASI VENDOR BLACKLIST
         $vendor = 'PT. Teknologi Maju';
+        $applicantName = 'Budi Santoso';
+        $isVendorBlacklisted = false; // Corsec might see this differently, assuming false for flow
+        $vendorLabelHtml = $isVendorBlacklisted
+            ? $vendor . ' <span class="badge bg-danger ms-2"><i class="bi bi-exclamation-triangle-fill"></i> BLACKLISTED</span>'
+            : $vendor . ' <span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> TERVERIFIKASI</span>';
         $area = 'Area Kantor Pusat';
         $sta = 'Jasa Rutin';
         $no_jo = 'JO-2023-001';
         $uraian = 'Pemeliharaan perangkat jaringan dan server di Gedung Utama.';
-        $startDate = date('Y-m-d');
+
+        // Head Dates
+        $startDate = date('d F Y');
         $startTime = '08:00';
-        $endDate = date('Y-m-d', strtotime('+3 days'));
+        $endDate = date('d F Y', strtotime('+3 days'));
         $endTime = '17:00';
 
-        // Data Pegawai Dummy
+        $startDateTime = $startDate . ' ' . $startTime;
+        $endDateTime = $endDate . ' ' . $endTime;
+
+        // Dummy Karyawan with Dates
         $employees = [
-            ['name' => 'Andi Saputra', 'nik' => '1234567890123456', 'gender' => 'Laki-laki', 'blood' => 'O'],
-            ['name' => 'Budi Santoso', 'nik' => '9876543210987654', 'gender' => 'Laki-laki', 'blood' => 'A'],
-            ['name' => 'Citra Dewi', 'nik' => '4567891230123456', 'gender' => 'Perempuan', 'blood' => 'B'],
+            ['name' => 'Andi Saputra', 'nik' => '1234567890123456', 'gender' => 'Laki-laki', 'blood' => 'O', 'is_blacklisted' => false, 'start' => $startDateTime, 'end' => $endDateTime],
+            ['name' => 'Budi Santoso', 'nik' => '9876543210987654', 'gender' => 'Laki-laki', 'blood' => 'A', 'is_blacklisted' => false, 'start' => $startDateTime, 'end' => $endDateTime],
+            ['name' => 'Citra Dewi', 'nik' => '4567891230123456', 'gender' => 'Perempuan', 'blood' => 'B', 'is_blacklisted' => false, 'start' => $startDateTime, 'end' => $endDateTime],
         ];
     @endphp
 
@@ -81,21 +103,18 @@
                     <h3 class="mb-0 fw-bold">Detail Work Permit (Corsec View)</h3>
                 </div>
                 <div class="col-sm-6 text-end">
-                    <!-- Tentukan Link Tombol Kembali berdasarkan Status -->
                     <a href="{{ $status == 'Waiting Corsec' ? route('corsec.work-permit-masuk') : route('corsec.work-permit-history') }}"
                         class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
                 </div>
             </div>
-            <!-- Pita Status (Placeholder untuk pemberitahuan di masa depan) -->
-            <!-- <div class="row mt-3"></div> -->
         </div>
     </div>
 
     <div class="app-content">
         <div class="container-fluid">
-            <!-- LINIMASA PELACAKAN -->
+            <!-- TRACKING TIMELINE -->
             <div class="card card-outline card-primary mb-4">
                 <div class="card-header bg-white border-0 pb-0">
                     <h5 class="card-title fw-bold">Status Tracking</h5>
@@ -105,11 +124,11 @@
                         <div class="progress"
                             style="height: 4px; position: absolute; top: 25px; left: 5%; right: 5%; z-index: 1;">
                             <div class="progress-bar bg-success" role="progressbar"
-                                style="width: {{ $status == 'Expired' ? '100%' : ($status == 'Active' ? '80%' : ($status == 'Scheduled' ? '60%' : ($status == 'Waiting HSE' ? '40%' : ($status == 'Waiting Corsec' ? '20%' : '0%')))) }};"
-                                aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                style="width: {{ $status == 'Expired' ? '100%' : ($status == 'Active' ? '100%' : ($status == 'Scheduled' ? '80%' : ($status == 'Waiting HSE' ? '40%' : ($status == 'Waiting Corsec' ? '20%' : '0%')))) }};"
+                                aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
+
                         <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
-                            <!-- Langkah 1: Draft/Diajukan -->
                             <div class="text-center bg-white px-2">
                                 <div class="rounded-circle {{ in_array($status, ['Waiting Corsec', 'Waiting HSE', 'Scheduled', 'Active', 'Expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
@@ -117,11 +136,7 @@
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Penerbitan<br>Work Permit</span>
                                 <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 08:00</small>
-                                <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Budi
-                                    (User)</small>
                             </div>
-
-                            <!-- Langkah 2: Verifikasi Corsec -->
                             <div class="text-center bg-white px-2">
                                 <div class="rounded-circle {{ in_array($status, ['Waiting HSE', 'Scheduled', 'Active', 'Expired']) ? 'bg-success' : ($status == 'Waiting Corsec' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
@@ -130,12 +145,8 @@
                                 <span class="d-block mt-2 fw-bold small">Verifikasi Corsec</span>
                                 @if(in_array($status, ['Waiting HSE', 'Scheduled', 'Active', 'Expired']))
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 09:30</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Siti
-                                        (Corsec)</small>
                                 @endif
                             </div>
-
-                            <!-- Langkah 3: Review HSE -->
                             <div class="text-center bg-white px-2">
                                 <div class="rounded-circle {{ in_array($status, ['Scheduled', 'Active', 'Expired']) ? 'bg-success' : ($status == 'Waiting HSE' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
@@ -144,314 +155,208 @@
                                 <span class="d-block mt-2 fw-bold small">Review HSE</span>
                                 @if(in_array($status, ['Scheduled', 'Active', 'Expired']))
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">14 Jan 13:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Admin
-                                        HSE</small>
                                 @endif
                             </div>
-
-                            <!-- Langkah 4: Safety Induction -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : ($status == 'Scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired', 'Scheduled']) ? 'bg-success' : ($status == 'Scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-person-badge fs-4"></i>
                                 </div>
                                 <span class="d-block mt-2 fw-bold small">Safety Induction</span>
-                                @if(in_array($status, ['Active', 'Expired']))
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">15 Jan 09:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Oleh: Admin
-                                        HSE</small>
+                                @if(in_array($status, ['Active', 'Expired', 'Scheduled']))
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">Selesai</small>
                                 @endif
                             </div>
 
-                            <!-- Langkah 5: Aktif (Tetap Hijau jika Expired) -->
                             <div class="text-center bg-white px-2">
-                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
+                                <div class="rounded-circle {{ in_array($status, ['Active', 'Expired']) ? 'bg-success' : ($status == 'Scheduled' ? 'bg-primary' : 'bg-secondary') }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-flag fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Izin Aktif</span>
+                                <span class="d-block mt-2 fw-bold small">Full Access</span>
                                 @if(in_array($status, ['Active', 'Expired']))
                                     <small class="text-muted d-block" style="font-size: 0.75rem;">15 Jan 10:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Valid by
-                                        System</small>
                                 @endif
                             </div>
-
-                            <!-- Langkah 6: Expired (Tahap Baru) -->
                             <div class="text-center bg-white px-2">
                                 <div class="rounded-circle {{ $status == 'Expired' ? 'bg-success' : 'bg-secondary' }} text-white d-flex align-items-center justify-content-center mx-auto border border-3 border-white shadow-sm"
                                     style="width: 50px; height: 50px;">
                                     <i class="bi bi-check-circle-fill fs-4"></i>
                                 </div>
-                                <span class="d-block mt-2 fw-bold small">Izin Berakhir</span>
-                                @if($status == 'Expired')
-                                    <small class="text-muted d-block" style="font-size: 0.75rem;">20 Jan 17:00</small>
-                                    <small class="d-block text-primary fw-bold" style="font-size: 0.7rem;">Selesai</small>
+                                <span class="d-block mt-2 fw-bold small">Selesai</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETAIL CONTENT: READ-ONLY -->
+
+            <!-- SECTION 1: HEAD DATA (TOP - FULL WIDTH) -->
+            <div class="card shadow-sm mb-4" style="border-top: 4px solid #0d6efd !important;">
+                <div class="card-header bg-transparent border-0 pt-4 pb-2">
+                    <h5 class="fw-bold text-dark mb-0 ps-2">Data Head Work Permit</h5>
+                </div>
+                <div class="card-body pt-0">
+                    <!-- Row 1: Vendor & Key Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted small text-uppercase fw-bold letter-spacing-1 mb-1">Nama Vendor /
+                                Instansi</label>
+                            <div
+                                class="p-3 bg-light rounded border-start border-3 {{ $isVendorBlacklisted ? 'border-danger' : 'border-success' }}">
+                                <h5 class="fw-bold mb-0 text-dark">{{ $vendor }}</h5>
+                                @if($isVendorBlacklisted)
+                                    <div class="mt-1 text-danger small fw-bold"><i
+                                            class="bi bi-exclamation-triangle-fill me-1"></i> VENDOR BLACKLISTED</div>
+                                @else
+                                    <div class="mt-1 text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i>
+                                        Terverifikasi</div>
                                 @endif
                             </div>
                         </div>
                     </div>
+
+                    <!-- Row 2: Details Grid -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Nomor Work Permit</label>
+                            <div class="fw-bold text-dark fs-5">WP-2024-001</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Nomor JO (Jasa Rutin)</label>
+                            <div class="fw-bold text-dark fs-5">{{ $no_jo }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Area Kerja</label>
+                            <div class="fw-bold text-dark"><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $area }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">STA</label>
+                            <div class="fw-bold text-dark"><span
+                                    class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">{{ $sta }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Description & Hazards -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Uraian Pekerjaan</label>
+                            <div class="p-3 bg-light rounded text-secondary h-100" style="border: 1px dashed #ced4da;">
+                                {{ $uraian }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="text-muted small text-uppercase fw-bold mb-2">Jenis Pekerjaan (Safety
+                                        Hazard)</label>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge border border-secondary text-secondary p-2"><i
+                                                class="bi bi-check-lg"></i> Pekerjaan Listrik</span>
+                                        <span class="badge border border-secondary text-secondary p-2"><i
+                                                class="bi bi-check-lg"></i> Bekerja di Ketinggian</span>
+                                        <span class="badge border border-light text-muted bg-light p-2 opacity-50">Ruang
+                                            Terbatas</span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="text-muted small text-uppercase fw-bold mb-1">Jadwal Pekerjaan
+                                        Utama</label>
+                                    <div class="bg-white border rounded p-2">
+                                        <div class="row">
+                                            <div class="col-md-6 border-end">
+                                                <span class="text-muted small d-block">Mulai:</span>
+                                                <span class="fw-bold text-primary">{{ $startDateTime }}</span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <span class="text-muted small d-block">Selesai:</span>
+                                                <span class="fw-bold text-primary">{{ $endDateTime }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <form>
-                <div class="row">
-                    <!-- Kolom Kiri: Data Head Work Permit -->
-                    <div class="col-md-7">
-                        <div class="card card-primary card-outline h-100">
-                            <div class="card-header">
-                                <h3 class="card-title">Data Head Work Permit</h3>
-                            </div>
-                            <div class="card-body">
-                                <!-- No. Dokumen WP -->
-                                <div class="mb-3">
-                                    <label class="form-label">Nomer Work Permit</label>
-                                    <input type="text" class="form-control fw-bold" value="WP-2024-001" disabled>
-                                </div>
-
-                                <!-- Nama Vendor -->
-                                <div class="mb-3">
-                                    <label class="form-label">Nama Vendor/Instansi/Universitas</label>
-                                    <input type="text" class="form-control" name="nama_vendor" value="{{ $vendor }}"
-                                        disabled>
-                                </div>
-
-                                <!-- Area & STA -->
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Area</label>
-                                        <select class="form-select" name="area" disabled>
-                                            <option selected>{{ $area }}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">STA</label>
-                                        <select class="form-select" name="sta" disabled>
-                                            <option selected>{{ $sta }}</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Nomer JO -->
-                                <div class="mb-3">
-                                    <label class="form-label">Nomer JO (Bila Jasa Rutin)</label>
-                                    <input type="text" class="form-control" name="nomer_jo" value="{{ $no_jo }}" disabled>
-                                </div>
-
-                                <!-- Jenis Pekerjaan (Safety Induction) -->
-                                <div class="mb-3">
-                                    <label class="form-label d-block">Jenis Pekerjaan untuk Safety Induction</label>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" checked disabled>
-                                                <label class="form-check-label">Pekerjaan Listrik</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" disabled>
-                                                <label class="form-check-label">Memasuki Ruang Terbatas</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" disabled>
-                                                <label class="form-check-label">Bekerja di Ketinggian</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Uraian Pekerjaan -->
-                                <div class="mb-3">
-                                    <label class="form-label">Uraian Pekerjaan</label>
-                                    <textarea class="form-control" rows="4" disabled>{{ $uraian }}</textarea>
-                                </div>
-
-                                <!-- Waktu Mulai -->
-                                <div class="row mb-3">
-                                    <label class="form-label">Waktu Mulai</label>
-                                    <div class="col-md-6">
-                                        <input type="date" class="form-control" value="{{ $startDate }}" disabled>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <input type="time" class="form-control" value="{{ $startTime }}" disabled>
-                                    </div>
-                                </div>
-
-                                <!-- Waktu Berakhir -->
-                                <div class="row mb-3">
-                                    <label class="form-label">Waktu Berakhir</label>
-                                    <div class="col-md-6">
-                                        <input type="date" class="form-control" value="{{ $endDate }}" disabled>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <input type="time" class="form-control" value="{{ $endTime }}" disabled>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Kolom Kanan: Pegawai OS & Aksi -->
-                    <div class="col-md-5">
-                        <div class="card card-primary card-outline">
-                            <div class="card-header">
-                                <h3 class="card-title">Pegawai OS ({{ count($employees) }})</h3>
-                                <div class="card-tools">
-                                    <button type="button" class="btn btn-tool" data-lte-toggle="card-collapse">
-                                        <i class="bi bi-dash-lg"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div style="max-height: 400px; overflow-y: auto;">
-                                    @foreach($employees as $emp)
-                                        <div class="employee-card d-flex align-items-center">
-                                            <div class="me-3">
-                                                <div class="avatar-circle">
-                                                    <i class="bi bi-person"></i>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0 fw-bold">{{ $emp['name'] }}</h6>
-                                                <small class="text-muted d-block">{{ $emp['nik'] }}</small>
-                                                <div class="mt-1">
-                                                    <span class="badge border text-dark">{{ $emp['gender'] }}</span>
-                                                    <span class="badge border text-dark">Gol. Darah {{ $emp['blood'] }}</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="ms-auto ps-2">
-                                                @if(in_array($status, ['Active', 'Expired']))
-                                                    <!-- Hanya Aktif (Disetujui oleh HSE) atau Expired yang mendapatkan Tombol Cetak -->
-                                                    <button type="button" class="btn btn-sm btn-outline-dark"
-                                                        onclick="showIdCard('{{ $emp['name'] }}', '{{ $emp['nik'] }}', '{{ $emp['gender'] }}')">
-                                                        <i class="bi bi-person-badge"></i> ID Card
-                                                    </button>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Kartu Aksi untuk Corsec -->
-                        @if($status == 'Waiting Corsec')
-                            <div class="card card-warning card-outline mt-3">
-                                <div class="card-header">
-                                    <h3 class="card-title fw-bold">Persetujuan Corsec</h3>
-                                </div>
-                                <div class="card-body text-center">
-                                    <p class="text-muted">Apakah Anda menyetujui Work Permit ini untuk diteruskan ke HSE?</p>
-                                    <div class="d-grid gap-2">
-                                        <button type="button" class="btn btn-success" id="btnApprove">
-                                            <i class="bi bi-check-circle"></i> Setujui & Teruskan ke HSE
-                                        </button>
-                                        <button type="button" class="btn btn-danger" id="btnReject">
-                                            <i class="bi bi-x-circle"></i> Tolak Work Permit
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-
-                    </div>
+            <!-- SECTION 2: EMPLOYEES TABLE (BOTTOM - FULL WIDTH) -->
+            <div class="card shadow-sm mb-4" style="border-top: 4px solid #0d6efd !important;">
+                <div
+                    class="card-header bg-transparent border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold text-dark mb-0 ps-2">Daftar Personil ({{ count($employees) }})</h5>
+                    <span class="badge bg-info text-dark">Total: {{ count($employees) }} Orang</span>
                 </div>
-            </form>
-        </div>
-    </div>
-
-
-    <!-- Modal Cetak ID Card -->
-    <div class="modal fade" id="idCardModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header border-0 pb-0">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center pt-0">
-                    <div id="printableIdCard"
-                        class="d-inline-block text-start border border-dark border-2 position-relative shadow-sm"
-                        style="width: 8.5cm; height: 5.4cm; background: #fff; overflow: hidden; padding: 0;">
-                        <!-- Pembungkus Konten -->
-                        <div class="d-flex flex-column h-100">
-                            <!-- Header: Logo & Judul -->
-                            <div
-                                class="d-flex align-items-center justify-content-center pt-2 pb-1 border-bottom border-dark">
-                                <img src="https://via.placeholder.com/150x50?text=LOGO+PERUSAHAAN" alt="Logo"
-                                    style="height: 35px; margin-right: 10px;">
-                                <div class="text-center" style="line-height: 1.1;">
-                                    <span class="d-block fw-bold text-uppercase"
-                                        style="font-size: 10pt; letter-spacing: 0.5px;">KARTU TANDA PENGENAL</span>
-                                    <span class="d-block fw-bold text-uppercase" style="font-size: 9pt;">PRAKTEK KERJA /
-                                        MAGANG</span>
-                                </div>
-                            </div>
-
-                            <!-- Body: Foto & Info -->
-                            <div class="d-flex flex-grow-1 p-2">
-                                <!-- Area Foto -->
-                                <div class="me-3 d-flex flex-column align-items-center justify-content-center"
-                                    style="width: 25%;">
-                                    <div class="bg-light border border-secondary d-flex align-items-center justify-content-center mb-1"
-                                        style="width: 100%; height: 90px;">
-                                        <i class="bi bi-person-fill text-muted" style="font-size: 3rem;"></i>
-                                        <!-- Foto asli akan menjadi <img src="..." class="w-100 h-100 object-fit-cover"> -->
-                                    </div>
-                                    <div id="qrcodePlaceholder" style="width: 50px; height: 50px; background-color: #000;">
-                                    </div>
-                                </div>
-
-                                <!-- Tabel Info (Tanpa Batas) -->
-                                <div class="flex-grow-1" style="font-size: 9pt;">
-                                    <table class="table table-borderless table-sm mb-0 align-middle">
-                                        <tbody>
-                                            <tr>
-                                                <td class="p-0 pb-1 text-nowrap" style="width: 35%;">Nama</td>
-                                                <td class="p-0 pb-1 text-center" style="width: 5%;">:</td>
-                                                <td class="p-0 pb-1 fw-bold text-uppercase" id="cardName"></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pb-1 text-nowrap" style="width: 40%;" id="labelInstitution">
-                                                    Nama (Sekolah/Vendor)</td>
-                                                <td class="p-0 pb-1 text-center" style="width: 5%;">:</td>
-                                                <td class="p-0 pb-1 text-uppercase" id="cardInstitution"></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pb-1 text-nowrap" id="labelIdNumber">(NIK/NIS)</td>
-                                                <td class="p-0 pb-1 text-center">:</td>
-                                                <td class="p-0 pb-1" id="cardNik"></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pb-1 text-nowrap">Area</td>
-                                                <td class="p-0 pb-1 text-center">:</td>
-                                                <td class="p-0 pb-1 text-uppercase">{{ $area ?? 'Area Pabrik' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="p-0 pb-1 text-nowrap">Periode</td>
-                                                <td class="p-0 pb-1 text-center">:</td>
-                                                <td class="p-0 pb-1 text-danger fw-bold">14 Jan 2026 s.d. 20 Jan 2026</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <button type="button" class="btn btn-primary px-4 fw-bold" onclick="printDiv('printableIdCard')">
-                            <i class="bi bi-printer-fill me-2"></i> Cetak ID Card
-                        </button>
+                <div class="card-body p-3">
+                    <div class="table-responsive">
+                        <table id="tableEmployees"
+                            class="table table-bordered table-striped table-hover align-middle w-100">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="text-center" width="5%">No</th>
+                                    <th width="20%">Nama Personil</th>
+                                    <th width="15%">NIK</th>
+                                    <th width="10%">Jenis Kelamin</th>
+                                    <th width="10%" class="text-nowrap">Gol. Darah</th>
+                                    <th width="15%">Mulai</th>
+                                    <th width="15%">Selesai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($employees as $index => $emp)
+                                    <tr class="{{ $emp['is_blacklisted'] ? 'table-danger' : '' }}">
+                                        <td class="text-center fw-bold text-secondary">{{ $index + 1 }}</td>
+                                        <td>
+                                            <div class="fw-bold {{ $emp['is_blacklisted'] ? 'text-danger' : 'text-dark' }}">
+                                                {{ $emp['name'] }}
+                                            </div>
+                                            @if($emp['is_blacklisted'])
+                                                <span class="badge bg-danger">BLACKLISTED</span>
+                                            @endif
+                                        </td>
+                                        <td class="font-monospace text-muted">{{ $emp['nik'] }}</td>
+                                        <td class="text-muted">{{ $emp['gender'] }}</td>
+                                        <td class="text-center text-muted fw-bold">{{ $emp['blood'] }}</td>
+                                        <td class="text-muted">{{ $emp['start'] }}</td>
+                                        <td class="text-muted">{{ $emp['end'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+
+            <!-- SECTION 3: APPROVAL ACTION (CORSEC SPECIFIC) -->
+            @if($status == 'Waiting Corsec')
+                <div class="card shadow-sm mb-4 border-warning">
+                    <div class="card-header bg-warning bg-opacity-10 border-bottom border-warning py-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-shield-lock-fill me-2"></i> Persetujuan Corporate
+                            Secretary</h6>
+                    </div>
+                    <div class="card-body text-center p-3">
+                        <p class="text-muted mb-3">Apakah Anda menyetujui Work Permit ini untuk diteruskan ke departemen HSE?
+                        </p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button" class="btn btn-outline-danger px-4 fw-bold" id="btnReject">
+                                <i class="bi bi-x-circle me-1"></i> Tolak
+                            </button>
+                            <button type="button" class="btn btn-success px-4 fw-bold shadow-sm" id="btnApprove">
+                                <i class="bi bi-check-circle-fill me-1"></i> Setujui & Teruskan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
+
     <!-- Modal Tanda Tangan -->
-    <div class="modal fade" id="signatureModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="signatureModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
@@ -480,15 +385,46 @@
 @endsection
 
 @push('scripts')
+    <!-- jQuery (Required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables & Plugin -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        $(document).ready(function () {
+            // Init DataTables
+            $('#tableEmployees').DataTable({
+                "responsive": true,
+                "lengthChange": true,
+                "autoWidth": false,
+                "pagingType": "simple_numbers",
+                "pageLength": 5,
+                "language": {
+                    "search": "Cari:",
+                    "lengthMenu": "Tampilkan _MENU_ data per halaman",
+                    "zeroRecords": "Data tidak ditemukan",
+                    "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    "infoEmpty": "Tidak ada data yang tersedia",
+                    "infoFiltered": "(difilter dari _MAX_ total data)",
+                    "paginate": {
+                        "previous": "Previous",
+                        "next": "Next"
+                    }
+                }
+            });
+
             const btnApprove = document.getElementById('btnApprove');
             const btnReject = document.getElementById('btnReject');
 
             // Logika Canvas
             let canvas, ctx, isDrawing = false;
+            const modalElement = document.getElementById('signatureModal');
+            const signatureModal = new bootstrap.Modal(modalElement);
 
             function initCanvas() {
                 canvas = document.getElementById('signatureCanvas');
@@ -504,7 +440,7 @@
                 canvas.addEventListener('mouseup', stopDrawing);
                 canvas.addEventListener('mouseout', stopDrawing);
 
-                // Event Sentuh (untuk dukungan seluler dasar)
+                // Event Sentuh
                 canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     const touch = e.touches[0];
@@ -518,50 +454,36 @@
                 canvas.addEventListener('touchend', stopDrawing);
             }
 
-            function startDrawing(e) {
-                isDrawing = true;
-                draw(e);
-            }
-
+            function startDrawing(e) { isDrawing = true; draw(e); }
             function draw(e) {
                 if (!isDrawing) return;
                 const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                ctx.lineTo(x, y);
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(x, y);
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
             }
-
-            function stopDrawing() {
-                isDrawing = false;
-                ctx.beginPath();
-            }
-
+            function stopDrawing() { isDrawing = false; ctx.beginPath(); }
             function clearCanvas() {
                 if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
 
+            // Inisialisasi canvas saat modal muncul
+            modalElement.addEventListener('shown.bs.modal', function () {
+                initCanvas();
+                clearCanvas();
+            });
+
+            document.getElementById('btnClearSignature').addEventListener('click', clearCanvas);
+
             if (btnApprove) {
                 btnApprove.addEventListener('click', function () {
-                    // Buka Modal
-                    const modal = new bootstrap.Modal(document.getElementById('signatureModal'));
-                    modal.show();
-
-                    // Inisialisasi canvas setelah modal ditampilkan untuk mendapatkan dimensi yang benar
-                    setTimeout(initCanvas, 500);
+                    signatureModal.show();
                 });
             }
 
-            // Tangani Konfirmasi Tanda Tangan
             document.getElementById('btnConfirmSignature').addEventListener('click', function () {
-                // Di sini biasanya Anda akan mengonversi canvas ke gambar: canvas.toDataURL()
-                // Untuk demo, lanjutkan saja
-                const modalEl = document.getElementById('signatureModal');
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
+                signatureModal.hide();
 
                 Swal.fire({
                     title: 'Berhasil!',
@@ -572,9 +494,6 @@
                 });
             });
 
-            // Tangani Hapus
-            document.getElementById('btnClearSignature').addEventListener('click', clearCanvas);
-
             if (btnReject) {
                 btnReject.addEventListener('click', function () {
                     Swal.fire({
@@ -584,7 +503,6 @@
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
                         confirmButtonText: 'Tolak',
                         cancelButtonText: 'Batal'
                     }).then((result) => {
@@ -596,49 +514,5 @@
                 });
             }
         });
-
-        function showIdCard(name, nik, gender) {
-            document.getElementById('cardName').innerText = name;
-            document.getElementById('cardNik').innerText = nik;
-
-            // Logika untuk menentukan Institusi dan Jenis ID
-            // Untuk demo, jika NIK dimulai dengan '9', itu Vendor (NIK), kalau tidak Sekolah (NIS)
-            const isVendor = nik.startsWith('9');
-            document.getElementById('cardInstitution').innerText = isVendor ? 'PT. TEKNOLOGI MAJU' : 'SMK NEGERI 1 CONTOH';
-
-            // Perbarui Label
-            document.getElementById('labelInstitution').innerText = isVendor ? 'Nama Vendor' : 'Nama Sekolah';
-            document.getElementById('labelIdNumber').innerText = isVendor ? 'NIK' : 'NIS';
-
-            // Implementasi Pembuatan Kode QR (menggunakan perpustakaan placeholder atau API)
-            // Untuk saat ini kami menggunakan Google Charts API untuk demo mudah
-            const qrContainer = document.getElementById('qrcodePlaceholder');
-            qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${nik}" style="width:100%; height:100%;">`;
-
-            const modal = new bootstrap.Modal(document.getElementById('idCardModal'));
-            modal.show();
-        }
-
-        function printDiv(divId) {
-            const printContents = document.getElementById(divId).outerHTML;
-            const originalContents = document.body.innerHTML;
-
-            const printWindow = window.open('', '', 'width=800,height=600');
-            printWindow.document.write('<html><head><title>Print ID Card</title>');
-            printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">');
-            printWindow.document.write('<style>body{display:flex; justify-content:center; align-items:center; height:100vh; margin:0;}</style>');
-            printWindow.document.write('</head><body>');
-            printWindow.document.write(printContents);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-
-            // Tunggu gaya dimuat
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
-            }, 1000);
-        }
     </script>
-
-
 @endpush

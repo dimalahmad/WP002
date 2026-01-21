@@ -194,6 +194,8 @@
                                                 <input type="text" class="form-control" value="081234567890" name="no_hp">
                                             </div>
                                         </div>
+
+
                                     </div>
                                     <div class="card-footer text-end">
                                         <a href="{{ route('user.master-os.history') }}" class="btn btn-secondary me-2">

@@ -63,20 +63,76 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($employees as $index => $emp)
+                            @php
+                                $names = [
+                                    'Andi Saputra',
+                                    'Budi Hartono',
+                                    'Citra Lestari',
+                                    'Dedi Kurniawan',
+                                    'Eka Putri',
+                                    'Fajar Nugroho',
+                                    'Gita Permata',
+                                    'Hendra Wijaya',
+                                    'Indah Sari',
+                                    'Joko Susilo',
+                                    'Kartika Dewi',
+                                    'Lukman Hakim',
+                                    'Maya Anggraini',
+                                    'Nanda Pratama',
+                                    'Olivia Gunawan',
+                                    'Prasetyo Wibowo',
+                                    'Qori Aulia',
+                                    'Rahmat Hidayat',
+                                    'Siti Aminah',
+                                    'Taufik Rahman',
+                                    'Utami Wulandari',
+                                    'Vina Melati',
+                                    'Wahyu Saputra',
+                                    'Xaverius Halim',
+                                    'Yulia Safitri',
+                                    'Zainal Abidin',
+                                    'Agus Salim',
+                                    'Bella Saphira',
+                                    'Candra Wijaya',
+                                    'Dina Mariana',
+                                    'Eko Prasetyo',
+                                    'Fitriani',
+                                    'Gilang Ramadhan',
+                                    'Hesti Purwanti'
+                                ];
+
+                                $employees = [];
+                                for ($i = 0; $i < 30; $i++) {
+                                    $gender = ($i % 2 == 0) ? 'Laki-laki' : 'Perempuan';
+                                    $bloodTypes = ['A', 'B', 'AB', 'O'];
+                                    $statusList = ['Active', 'Inactive'];
+
+                                    $employees[] = [
+                                        'name' => $names[$i] ?? 'Pegawai ' . ($i + 1),
+                                        'nik' => '367401' . str_pad($i + 1, 6, '0', STR_PAD_LEFT) . '0001',
+                                        'gender' => $gender,
+                                        'blood' => $bloodTypes[array_rand($bloodTypes)],
+                                        'date' => date('d/m/Y', strtotime('+' . rand(1, 12) . ' months')),
+                                        'phone' => '0812-' . rand(1000, 9999) . '-' . rand(1000, 9999),
+                                        'status' => $statusList[array_rand($statusList)],
+                                    ];
+                                }
+                            @endphp
+
+                            @foreach($employees as $index => $emp)
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $emp->name }}</td>
-                                    <td>{{ $emp->nik }}</td>
-                                    <td>{{ $emp->gender }}</td>
-                                    <td>{{ $emp->blood_type }}</td>
-                                    <td>-</td> <!-- Tanggal Berakhir belum ada di DB -->
-                                    <td>{{ $emp->address ?? '-' }}</td> <!-- Placeholder Phone diganti Address sementara -->
+                                    <td class="fw-bold">{{ $emp['name'] }}</td>
+                                    <td>{{ $emp['nik'] }}</td>
+                                    <td>{{ $emp['gender'] }}</td>
+                                    <td>{{ $emp['blood'] }}</td>
+                                    <td>{{ $emp['date'] }}</td>
+                                    <td>{{ $emp['phone'] }}</td>
                                     <td class="text-center">
-                                        @if($emp->is_blacklisted)
-                                            <span class="badge bg-danger">Blacklisted</span>
-                                        @else
+                                        @if($emp['status'] == 'Active')
                                             <span class="badge bg-success">Active</span>
+                                        @else
+                                            <span class="badge bg-secondary">Inactive</span>
                                         @endif
                                     </td>
                                     <td class="text-center">
@@ -84,16 +140,10 @@
                                         <div class="btn-group btn-group-sm">
                                             <a href="{{ route('user.master-os.history') }}" class="btn btn-primary"
                                                 title="Detail"><i class="bi bi-eye"></i></a>
-                                            <!-- Tombol Edit belum diimplementasi -->
-                                            <!-- Edit button removed as per request -->
                                         </div>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">Data pegawai belum tersedia.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

@@ -57,22 +57,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($apds as $index => $apd)
+                            @php
+                                $apds = [
+                                    'Helmet',
+                                    'Safety Shoes',
+                                    'Sarung Tangan',
+                                    'Kaca mata Safety',
+                                    'Masker',
+                                    'Pelindung Wajah',
+                                    'Body Harnest',
+                                    'Kedok Las',
+                                    'Air Line Respirator',
+                                    'Breathing Apparatus',
+                                    'Baju Tahan Panas'
+                                ];
+                            @endphp
+
+                            @foreach($apds as $index => $apd)
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $apd->name }}</td>
+                                    <td class="fw-bold">{{ $apd }}</td>
                                     <td class="text-center">
                                         <button class="btn btn-warning btn-sm text-white btn-edit-apd" 
-                                            data-id="{{ $apd->id }}" data-name="{{ $apd->name }}" title="Edit">
+                                            data-name="{{ $apd }}" title="Edit">
                                             <i class="bi bi-pencil-fill"></i>
                                         </button>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="text-center">Belum ada data APD.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -86,18 +98,13 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title fw-bold" id="modalAPDLabel">Tambah APD Baru</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="formAPD" action="{{ route('hse.master-apd.store') }}" method="POST">
-                        @csrf
-                        <div id="method-container"></div>
-                        <input type="hidden" name="type" value="apd">
+                    <form id="formAPD">
                         <div class="mb-3">
                             <label for="inputNamaAPD" class="form-label">Nama APD</label>
-                            <input type="text" class="form-control" id="inputNamaAPD" name="name"
-                                placeholder="Contoh: Safety Helmet" required>
+                            <input type="text" class="form-control" id="inputNamaAPD" placeholder="Contoh: Safety Helmet" required>
                         </div>
                     </form>
                 </div>
@@ -130,7 +137,14 @@
                 "autoWidth": false,
                 "pagingType": "simple_numbers",
                 "pageLength": 10,
-                // ... rest of datatable config
+                "language": {
+                    "search": "Cari:",
+                    "lengthMenu": "Tampilkan _MENU_ data",
+                    "zeroRecords": "Data tidak ditemukan",
+                    "info": "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    "paginate": { "previous": "Previous", "next": "Next" }
+                },
+                "columnDefs": [{ "orderable": false, "targets": 2 }]
             });
 
             // Logika Modal
@@ -139,50 +153,44 @@
             const modalLabel = document.getElementById('modalAPDLabel');
             const inputNama = document.getElementById('inputNamaAPD');
             let isEditMode = false;
-            const formAPD = document.getElementById('formAPD');
-            const methodContainer = document.getElementById('method-container');
-
-            // Base Routes
-            const storeRoute = "{{ route('hse.master-apd.store') }}";
-            const updateRouteTemplate = "{{ route('hse.master-apd.update', ':id') }}";
 
             // Tangani Tombol Tambah
-            $('#btnTambahAPD').click(function () {
+            $('#btnTambahAPD').click(function() {
                 isEditMode = false;
                 modalLabel.innerText = 'Tambah APD Baru';
+                // Reset Warna ke Primary
                 $('.modal-header').removeClass('bg-warning').addClass('bg-primary');
+                // Reset Tombol Tutup ke putih (karena primary/biru gelap, warning/kuning terang)
                 $('.btn-close').addClass('btn-close-white');
                 
                 inputNama.value = '';
-                formAPD.action = storeRoute;
-                methodContainer.innerHTML = '';
-                
                 modal.show();
             });
 
-            // Tangani Tombol Edit
-            $(document).on('click', '.btn-edit-apd', function () {
+            // Tangani Tombol Edit (Delegasi Event untuk Tabel Dinamis)
+            $('#tableMasterAPD').on('click', '.btn-edit-apd', function() {
                 isEditMode = true;
-                const id = $(this).data('id');
                 const currentName = $(this).data('name');
-                
                 modalLabel.innerText = 'Edit Data APD';
+                // Set Warna ke Warning
                 $('.modal-header').removeClass('bg-primary').addClass('bg-warning');
+                 // Reset Tombol Tutup ke default (hitam) untuk keterbacaan latar belakang kuning
                 $('.btn-close').removeClass('btn-close-white');
 
                 inputNama.value = currentName;
-                formAPD.action = updateRouteTemplate.replace(':id', id);
-                methodContainer.innerHTML = '<input type="hidden" name="_method" value="PUT">';
-
                 modal.show();
             });
 
             // Tangani Simpan
-            $('#btnSaveAPD').click(function () {
+            $('#btnSaveAPD').click(function() {
                 const nameCheck = inputNama.value.trim();
-
-                if (!nameCheck) {
-                    Swal.fire('Gagal', 'Nama APD tidak boleh kosong!', 'error');
+                
+                if(!nameCheck) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Nama APD tidak boleh kosong!',
+                    });
                     return;
                 }
 
@@ -198,7 +206,18 @@
                     cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        $('#formAPD').submit();
+                        // Simulasi Sukses
+                        modal.hide();
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: isEditMode ? 'Data APD berhasil diperbarui.' : 'Data APD berhasil ditambahkan.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Di aplikasi nyata, muat ulang atau perbarui tabel di sini
+                            // location.reload();
+                        });
                     }
                 });
             });

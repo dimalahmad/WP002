@@ -42,42 +42,85 @@
 
     <div class="app-content">
         <div class="container-fluid">
+            <!-- Tanggal Berakhir & Status Alert -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="alert alert-info shadow-sm d-flex align-items-center justify-content-between px-4 py-3 border-0"
+                        role="alert" style="background-color: #e3f2fd; color: #0d47a1;">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar-check-fill fs-3 me-3"></i>
+                            <div>
+                                <h5 class="fw-bold mb-0">Status Keaktifan: <span class="badge bg-success ms-2">ACTIVE</span>
+                                </h5>
+                                <small class="mb-0">Masa berlaku akun hingga: <strong>20 Mei 2025</strong></small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted d-block">Sisa Waktu</small>
+                            <span class="fw-bold fs-5">1 Tahun 4 Bulan 23 Hari</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Bagian Data OS -->
             <div class="row mb-4">
-                <!-- Kolom Kiri: Uploads -->
+                <!-- Kolom Kiri: Uploads (Redesigned) -->
                 <div class="col-md-4">
-                    <!-- Foto Wajah -->
-                    <div class="card card-success card-outline mb-3">
-                        <div class="card-header">
-                            <h3 class="card-title">Foto Wajah</h3>
+                    <!-- Foto Wajah (Langsung Tampil, Lebih Compact) -->
+                    <div class="card shadow-sm border-0 mb-3 text-center overflow-hidden"
+                        style="border-radius: 12px; border-top: 4px solid #007bff !important;">
+                        <div class="card-body p-0">
+                            <!-- Placeholder Image Replacement (Ganti src dengan path foto asli) -->
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <i class="bi bi-person-fill text-secondary" style="font-size: 8rem;"></i>
+                                <!-- <img src="{{ asset('path/to/photo.jpg') }}" class="img-fluid w-100 h-100 object-fit-cover" alt="Foto Wajah"> -->
+                            </div>
                         </div>
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="bi bi-person-circle display-1 text-success"></i>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label d-none">Upload Foto</label>
-                                <button class="btn btn-outline-success btn-sm" disabled>
-                                    <i class="bi bi-eye"></i> Lihat Foto
-                                </button>
-                            </div>
+                        <div class="card-footer bg-white border-0 py-2">
+                            <h6 class="fw-bold text-muted mb-0 small text-uppercase letter-spacing-1">Foto Wajah</h6>
                         </div>
                     </div>
 
-                    <!-- Scan KTP -->
-                    <div class="card card-success card-outline mb-3">
-                        <div class="card-header">
-                            <h3 class="card-title">Scan KTP</h3>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="bi bi-card-image display-4 text-success"></i>
+                    <!-- Scan KTP (Compact & Pop-up) -->
+                    <div class="card shadow-sm border-0 text-center"
+                        style="border-radius: 12px; border-top: 4px solid #007bff !important;">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded p-2 me-3">
+                                    <i class="bi bi-card-heading text-primary fs-3"></i>
+                                </div>
+                                <div class="text-start">
+                                    <h6 class="fw-bold text-dark mb-0">Scan KTP</h6>
+                                    <small class="text-muted">Dokumen Identitas</small>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label d-none">Upload KTP</label>
-                                <button class="btn btn-outline-success btn-sm" disabled>
-                                    <i class="bi bi-eye"></i> Lihat KTP
-                                </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                data-bs-toggle="modal" data-bs-target="#modalKTP">
+                                <i class="bi bi-eye me-1"></i> Lihat
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal untuk KTP -->
+                <div class="modal fade" id="modalKTP" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0 pb-0">
+                                <h5 class="modal-title fw-bold">Scan E-KTP</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center p-4">
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                                    style="height: 250px; border: 2px dashed #dee2e6;">
+                                    <div class="text-muted">
+                                        <i class="bi bi-file-earmark-image display-4 mb-2 d-block"></i>
+                                        <span>Preview KTP Image Here</span>
+                                    </div>
+                                    <!-- Gunakan tag img di bawah ini untuk real app -->
+                                    <!-- <img src="{{ asset('path/to/ktp.jpg') }}" class="img-fluid rounded shadow-sm" alt="Scan KTP"> -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -85,96 +128,72 @@
 
                 <!-- Kolom Kanan: Data Pribadi -->
                 <div class="col-md-8">
-                    <div class="card card-success card-outline">
-                        <div class="card-header">
-                            <h3 class="card-title">Data Pribadi (Sesuai KTP)</h3>
+                    <div class="card shadow-sm border-0" style="border-radius: 12px; border-top: 4px solid #007bff !important;">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="card-title fw-bold text-dark mb-0"><i
+                                    class="bi bi-person-lines-fill me-2 text-primary"></i> Data Pribadi (Sesuai KTP)</h5>
                         </div>
-                        <div class="card-body">
-                            <!-- NIK -->
-                            <div class="mb-3">
-                                <label class="form-label">NIK (Nomor Induk Kependudukan)</label>
-                                <input type="number" class="form-control" value="3674012005900001" readonly>
-                            </div>
-
-                            <!-- Nama Lengkap -->
-                            <div class="mb-3">
-                                <label class="form-label">Nama Lengkap</label>
-                                <input type="text" class="form-control" value="Andi Saputra" readonly>
-                            </div>
-
-                            <!-- TTL -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Tempat Lahir</label>
-                                    <input type="text" class="form-control" value="Cilegon" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Tanggal Lahir</label>
-                                    <input type="date" class="form-control" value="1990-05-20" readonly>
-                                </div>
-                            </div>
-
-                            <!-- Jenis Kelamin & Goldar -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Jenis Kelamin</label>
-                                    <input type="text" class="form-control" value="Laki-laki" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Golongan Darah</label>
-                                    <input type="text" class="form-control" value="O" readonly>
-                                </div>
-                            </div>
-
-                            <!-- Alamat -->
-                            <div class="mb-3">
-                                <label class="form-label">Alamat Lengkap</label>
-                                <textarea class="form-control" rows="2"
-                                    readonly>Jl. Sultan Ageng Tirtayasa No. 10</textarea>
-                            </div>
-
-                            <!-- Provinsi & Kota -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Provinsi</label>
-                                    <input type="text" class="form-control" value="Banten" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Kabupaten/Kota</label>
-                                    <input type="text" class="form-control" value="Cilegon" readonly>
-                                </div>
-                            </div>
-
-                            <!-- Kecamatan & Desa -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Kecamatan</label>
-                                    <input type="text" class="form-control" value="Cibeber" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Kel/Desa</label>
-                                    <input type="text" class="form-control" value="Cibeber" readonly>
-                                </div>
-                            </div>
-
-                            <!-- RT/RW & Kode Pos -->
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">RT / RW</label>
-                                    <input type="text" class="form-control" value="001/002" readonly>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Kode Pos</label>
-                                    <input type="text" class="form-control" value="42426" readonly>
-                                </div>
-                            </div>
-
-                            <!-- No HP Only -->
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <label class="form-label">No. Handphone</label>
-                                    <input type="text" class="form-control" value="081234567890" readonly>
-                                </div>
+                        <div class="card-body pt-0">
+                            <div class="table-responsive">
+                                <table class="table table-borderless align-middle mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase w-25 small"
+                                                style="letter-spacing: 0.5px;">NIK</td>
+                                            <td class="fw-bold text-dark fs-5">3674012005900001</td>
+                                        </tr>
+                                        <tr> <!-- Pembatas Halus -->
+                                            <td colspan="2">
+                                                <hr class="my-0 text-muted" style="opacity: 0.1">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">Nama Lengkap</td>
+                                            <td class="fw-bold text-dark">Andi Saputra</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">Tempat, Tgl Lahir</td>
+                                            <td class="text-dark">Cilegon, 20 Mei 1990</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">Jenis Kelamin</td>
+                                            <td class="text-dark">Laki-laki</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">Golongan Darah</td>
+                                            <td class="text-dark">O</td>
+                                        </tr>
+                                        <tr> <!-- Pembatas Halus -->
+                                            <td colspan="2">
+                                                <hr class="my-0 text-muted" style="opacity: 0.1">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small align-top py-3"
+                                                style="letter-spacing: 0.5px;">Alamat Lengkap</td>
+                                            <td class="text-dark py-3">
+                                                Jl. Sultan Ageng Tirtayasa No. 10<br>
+                                                <small class="text-muted">Desa Cibeber, Kec. Cibeber, Kota Cilegon, Banten -
+                                                    42426</small>
+                                            </td>
+                                        </tr>
+                                        <tr> <!-- Pembatas Halus -->
+                                            <td colspan="2">
+                                                <hr class="my-0 text-muted" style="opacity: 0.1">
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-bold text-uppercase small"
+                                                style="letter-spacing: 0.5px;">No. Handphone</td>
+                                            <td class="fw-bold text-primary"><i class="bi bi-whatsapp me-1"></i>
+                                                081234567890</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

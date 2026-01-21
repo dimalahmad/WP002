@@ -41,9 +41,6 @@ return [
             'journal_mode' => null,
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',
-            'options' => env('APP_ENV') === 'production' ? [
-                \PDO::SQLITE_ATTR_OPEN_FLAGS => \PDO::SQLITE_OPEN_READONLY,
-            ] : [],
         ],
 
         'mysql' => [

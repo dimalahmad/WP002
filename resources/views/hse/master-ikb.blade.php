@@ -57,22 +57,28 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($ikbs as $index => $ikb)
+                            @php
+                                $ikbList = [
+                                    'Kerja Panas',
+                                    'Memasuki Ruang Terbatas',
+                                    'Pekerjaan Penggalian',
+                                    'Bekerja di Ketinggian',
+                                    'Pekerjaan Listrik'
+                                ];
+                            @endphp
+
+                            @foreach($ikbList as $index => $ikb)
                                 <tr>
                                     <td class="text-center">{{ $index + 1 }}</td>
-                                    <td class="fw-bold">{{ $ikb->name }}</td>
+                                    <td class="fw-bold">{{ $ikb }}</td>
                                     <td class="text-center">
-                                        <a href="{{ route('hse.master-ikb.edit', $ikb->id) }}"
-                                            class="btn btn-warning btn-sm text-white" title="Edit">
+                                        <button class="btn btn-warning btn-sm text-white btn-edit-ikb"
+                                            data-name="{{ $ikb }}" title="Edit">
                                             <i class="bi bi-pencil-fill"></i>
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="text-center">Belum ada data jenis pekerjaan.</td>
-                                </tr>
-                            @endforelse
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -113,9 +119,14 @@
                 "columnDefs": [{ "orderable": false, "targets": 2 }]
             });
 
-            // Handle Add Button
+            // Handle Add Button - Redirect to Create Page
             $('#btnTambahIKB').click(function () {
                 window.location.href = "{{ route('hse.master-ikb.create') }}";
+            });
+
+            // Handle Edit Button - Redirect to Edit Page
+            $('#tableMasterIKB').on('click', '.btn-edit-ikb', function () {
+                window.location.href = "{{ route('hse.master-ikb.edit') }}";
             });
         });
     </script>

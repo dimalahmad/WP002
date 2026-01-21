@@ -38,8 +38,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('user.work-permit.index') }}"
-                                class="nav-link {{ request()->routeIs('user.work-permit*') ? 'active' : '' }}">
+                            <a href="{{ route('user.work-permit') }}"
+                                class="nav-link {{ request()->routeIs('user.work-permit') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Work Permit</p>
                             </a>
@@ -78,24 +78,10 @@
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ route('hse.master-apd') }}"
-                                class="nav-link {{ request()->routeIs('hse.master-apd') ? 'active' : '' }}">
+                            <a href="{{ route('hse.master-data-si') }}"
+                                class="nav-link {{ request()->routeIs('hse.master-data-si') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
-                                <p>Master APD</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('hse.master-pengaman') }}"
-                                class="nav-link {{ request()->routeIs('hse.master-pengaman') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Master Pengaman</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('hse.master-ikb') }}"
-                                class="nav-link {{ request()->routeIs('hse.master-ikb') ? 'active' : '' }}">
-                                <i class="nav-icon bi bi-circle"></i>
-                                <p>Master IKB</p>
+                                <p>Master Data SI</p>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -110,6 +96,13 @@
                                 class="nav-link {{ request()->routeIs('hse.work-permit-hse') ? 'active' : '' }}">
                                 <i class="nav-icon bi bi-circle"></i>
                                 <p>Work Permit HSE</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('hse.safety-induction') }}"
+                                class="nav-link {{ request()->routeIs('hse.safety-induction') ? 'active' : '' }}">
+                                <i class="nav-icon bi bi-circle"></i>
+                                <p>Safety Induction</p>
                             </a>
                         </li>
                     </ul>
