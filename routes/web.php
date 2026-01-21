@@ -6,6 +6,61 @@ Route::get('/', function () {
     return redirect()->route('user.master-os');
 });
 
+Route::get('/test-db', function () {
+    try {
+        $tables = \DB::select("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME != 'sysdiagrams' ORDER BY TABLE_NAME");
+
+        $md = "# Database Documentation: WP001\n\n";
+        $md .= "Generated on: " . date('Y-m-d H:i:s') . "\n\n";
+
+        foreach ($tables as $t) {
+            $tableName = $t->TABLE_NAME;
+            $md .= "## Table: `{$tableName}`\n";
+
+            // Get Columns
+            $columns = \DB::select("SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ?", [$tableName]);
+
+            $md .= "### Schema\n";
+            $md .= "| Column | Type | Length | Nullable |\n";
+            $md .= "|---|---|---|---|\n";
+            foreach ($columns as $c) {
+                $len = $c->CHARACTER_MAXIMUM_LENGTH ? $c->CHARACTER_MAXIMUM_LENGTH : '-';
+                $md .= "| {$c->COLUMN_NAME} | {$c->DATA_TYPE} | {$len} | {$c->IS_NULLABLE} |\n";
+            }
+            $md .= "\n";
+
+            // Get Sample Data (First 3 rows)
+            try {
+                $rows = \DB::table($tableName)->limit(3)->get();
+                if ($rows->count() > 0) {
+                    $md .= "### Sample Data (First 3 rows)\n";
+                    // Header
+                    $md .= "| " . implode(' | ', array_keys((array) $rows[0])) . " |\n";
+                    $md .= "| " . implode(' | ', array_fill(0, count((array) $rows[0]), '---')) . " |\n";
+                    // Rows
+                    foreach ($rows as $row) {
+                        $rowArray = (array) $row;
+                        $mappedRow = array_map(function ($item) {
+                            return is_null($item) ? 'NULL' : (strlen($item) > 50 ? substr($item, 0, 47) . '...' : $item);
+                        }, $rowArray);
+                        $md .= "| " . implode(' | ', $mappedRow) . " |\n";
+                    }
+                } else {
+                    $md .= "*Table is empty.*\n";
+                }
+            } catch (\Exception $ex) {
+                $md .= "*Could not fetch sample data: {$ex->getMessage()}*\n";
+            }
+            $md .= "\n---\n\n";
+        }
+
+        return response($md)->header('Content-Type', 'text/plain');
+
+    } catch (\Exception $e) {
+        return "Error generating documentation: " . $e->getMessage();
+    }
+});
+
 // Grup User
 Route::prefix('user')->name('user.')->group(function () {
     Route::get('/master-os', function () {
